@@ -1,0 +1,7 @@
+
+<div>
+  adds a "export from svn" option to svn workspace udpaters.
+  sometimes you always clean the workspace, and if that's the case, it's pointless to do a checkout - as svn metadata
+  takes a long while to calculate.
+  instead, you can just export - you won't be updating since the workspace is cleaned anyway - and it's much faster.
+</div>

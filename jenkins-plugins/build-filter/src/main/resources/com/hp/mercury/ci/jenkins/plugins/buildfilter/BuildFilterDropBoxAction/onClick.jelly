@@ -1,0 +1,45 @@
+
+
+<script>
+function replace(a, b) {
+      var p = a.parentNode;
+      var next = a.nextSibling;
+      p.removeChild(a);
+      p.insertBefore(b,next);
+}
+
+function refreshBuildHistory() {
+  // first display the "loading..." icon
+  //var box = $("loadAllBuildHistory");
+  //box.innerHTML = '<img src="${imagesURL}/spinner.gif" alt=""/>';
+
+
+  //nathang: embed branch selector
+  var selectedBranch = $$("builds-filter").value
+
+    //TODO: if we don't put "all" url (say we put index) we get broken images and stuff?
+    new Ajax.Request("${relurl}buildHistory/refresh?buildsFilter=" + selectedBranch,{
+
+
+
+    method: "get",
+    onComplete: function(rsp,_) {
+      <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
+      var hist = $$("buildHistory");
+
+      var newhist = document.createElement('div');
+      newhist.innerHTML = rsp.responseText;
+
+      //newhist.id = hist.id
+      //hist.id = ""
+
+      replace(hist, newhist);
+
+      //this should point to the new buildHistory element, that we just got from server
+      $$("buildHistory").headers = hist.headers.slice(0,2).concat(['buildsFilter',$$("builds-filter").value]);
+
+    }
+
+});
+}
+</script>

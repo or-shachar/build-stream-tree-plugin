@@ -1,0 +1,641 @@
+<?xml version="1.0"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" trim="false">
+
+<!-- ajax proxy used for inputs validation -->
+<st:bind var="jsProxy" value="${it.getJsProxy()}"/>
+
+<script type="text/javascript" language="JavaScript">       // <![CDATA[
+
+       //counts the error messages
+       var validationCounter = 0;
+
+      //display an error message if the user used the same name for more than one job
+      function validateJobNameInput(input) {
+
+            //there is a convention that the error container for an input element is called ${element-name}ErrorMessage
+             var errorId =  input.name + "ErrorMessage";
+             //messageTd is the error message input of the "input" parameter we got
+             var messageTd = document.getElementById(errorId);
+
+             //check all the names given by the user
+             var newValMessage = validateNewNames(input);
+             if (newValMessage != null) {
+                    displayErrorAndUpdateCloneButton(messageTd, newValMessage);
+             }
+
+             //if user input is ok locally, check also ok with server
+             else{
+                      //server validation
+                     jsProxy.validateJobName(
+                            input.value,
+                            function (rsp) {
+                                   var errorMessage = rsp.responseObject();
+
+                                   //if no problem
+                                   if (errorMessage === "ok") {
+                                        removeErrorAndUpdateCloneButton(messageTd);
+                                   }
+
+                                   //else something's wrong
+                                   else {
+                                        displayErrorAndUpdateCloneButton(messageTd, errorMessage);
+                                   }
+                            }
+                      );
+             }
+      }
+
+      //check if input matches the all-clones target view if it's enabled. false = bad (match), true = good.
+      function validateHierarchicAndCloneJobsViewsDif(input){
+
+            //targetView text box is not disabled
+            var targetViewName = document.configForm.targetViewName;
+            var disabled =  targetViewName.disabled;
+
+             //if we don't use a targetView then nothing should be validate
+            return disabled ||
+                            //value is different than targetView value
+                            (input.value != targetViewName.value);
+      }
+
+      //check that the input element containing a job name as value doesn't collide
+      //with any other job names on the client side.
+      function validateNewNames(input) {
+
+           var errorMessage =  "Another job to clone already has this name";
+           var emptyMessage = "This field cannot be empty";
+
+           if (input.value==""){
+                   return  emptyMessage;
+           }
+
+            //get all textboxes whose name attribute starts with job which is the convention for our job textboxes
+           elements = getJobElements("input", "job");
+           for (var i=0 ; i < elements.length ; i++) {
+
+                        //if a different element has the same value (bad)
+                      if (elements[i].value == input.value &&
+                            elements[i].name != input.name) {
+
+                                return errorMessage ;
+                      }
+           }
+
+           return null;
+        }
+
+      //check both locally and via ajax on server that there are no view names collisions
+      function validateViewNameInput(input) {
+
+            //there is a convention that the error container for an input element is called ${element-name}ErrorMessage
+            var errorId =  input.name+"ErrorMessage";
+            var messageTd = document.getElementById(errorId);
+            var warningTd = document.getElementById(input.name + "WarningMessage");
+            var view_error =  "A view already exists with the name";
+
+            //display error message if textbox is empty
+            if (input.value == "") {
+                        removeWarning(warningTd);
+                        displayErrorAndUpdateCloneButton(messageTd, "This field cannot be empty");
+            }
+
+            else {
+
+                    //display error if hierarchic view has the same name as the listView "allClones"
+                    if  (input.name != "targetViewName" && !validateHierarchicAndCloneJobsViewsDif(input)){
+                                  removeWarning(warningTd);
+                                  displayErrorAndUpdateCloneButton(messageTd, "A view already exists with this name");
+                    }
+
+                    else{
+                            //call a server jenkins method to validate the view name
+                            jsProxy.validateViewName(
+                                    input.value,
+                                    function (rsp) {
+
+                                        var errorMessage = rsp.responseObject();
+
+                                        //server found an error
+                                        if (errorMessage != null){
+                                                //TODO: use error codes or something else, don't rely on message string
+                                                //view already exists error was found: display warning instead
+                                                if ( errorMessage.indexOf(view_error) != -1) {
+                                                        removeErrorAndUpdateCloneButton(messageTd);
+                                                        displayWarning("Warning: Jobs will be merged with an existing view name!", warningTd );
+                                                }
+
+                                                //if not merge warning - display error and disable cloning
+                                                else{
+                                                        removeWarning(warningTd);
+                                                        displayErrorAndUpdateCloneButton(messageTd, errorMessage);
+                                                }
+                                        }
+
+                                        //no error on server, remove error message from ui
+                                        else{
+                                               removeErrorAndUpdateCloneButton(messageTd);
+                                               removeWarning(warningTd);
+                                        }
+                                    }
+                            );
+                    }
+            }
+
+      }
+
+      function checkBoxViewValidation(input) {
+
+             //convention that all hierarchic views checkboxes start with cv_
+             var hierarchicViewCheckboxPrefix = "cv_";
+
+             //in the below conditional we initialize vars messageTd, textElement and warningTd for later use.
+
+             //input belongs to hierarchic view checkbox
+             if (input.name.startsWith(hierarchicViewCheckboxPrefix)) {
+
+                //get the actual checkbox name, without the "cv_"
+                var checkboxSpecifier = input.name.substring(hierarchicViewCheckboxPrefix.length);
+
+                var messageTd = document.getElementById(checkboxSpecifier + "ErrorMessage");
+                var textElement =  document.getElementById(checkboxSpecifier);
+
+                var warningTd = document.getElementById(checkboxSpecifier + "WarningMessage");
+             }
+
+             //the "allClones" target view container
+             else {
+
+                var messageTd = document.getElementById("targetViewNameErrorMessage");
+                var textElement = document.configForm.targetViewName;
+                var warningTd = document.getElementById("targetViewNameWarningMessage");
+             }
+
+             //remove error message if checkbox was unchecked
+             if (!input.checked && messageTd != null ){
+                removeErrorAndUpdateCloneButton(messageTd);
+                removeWarning(warningTd);
+             }
+
+            //checkbox is checked, validate the corresponding textbox
+             else {
+                //textElement is defined in previous block , and not in this scope but in javascript there is only function block, so it's ok
+                validateViewNameInput(textElement);
+             }
+      }
+
+      function displayErrorAndUpdateCloneButton(element,  message) {
+
+          //remove any previously existing error elements
+          if( element.className=="error" ){
+                    if (  element.firstChild != null){
+                        element.removeChild(element.firstChild);
+                        validationCounter--;
+                    }
+                    //make error container element visible
+                   element.setAttribute("style", "display:block");
+
+                  //message string may contain numbers instead of "" symbols.
+                  var decoded = message.replace(/&#039;/g, '"').replace(/&quot;/g, '"');
+
+                  //add error text to error container
+                  var newTextNode = document.createTextNode(decoded);
+                  element.appendChild(newTextNode);
+
+                   validationCounter++;
+
+                   //the conditional is not necessary but we leave it for sanity - hiding submit is dangerous.
+                   if (validationCounter > 0){
+                        document.getElementById("submitClone").setAttribute("style", "display:none");
+                  }
+          }
+      }
+
+      function removeErrorAndUpdateCloneButton(element){
+
+            //sanity: make sure this is a non-empty error element so that we don't accidentally remove something else..
+            if(element.className=="error" && element.firstChild != null){
+
+                     element.setAttribute("style", "display:none");
+                     element.removeChild(element.firstChild);
+
+                     validationCounter--;
+
+                    //display submit button if no more errors remain
+                     if(validationCounter == 0){
+                            document.getElementById("submitClone").setAttribute("style", "display:block");
+                     }
+            }
+      }
+
+      function displayWarning(warning, element){
+          if(element.id.endsWith("WarningMessage") ){
+
+                   removeWarning(element);
+
+                   var newTextNode = document.createTextNode(warning);
+
+                   element.setAttribute("style", "display:block; color:red;");
+                   element.appendChild(newTextNode);
+           }
+      }
+
+      function removeWarning(element){
+
+           if(element.firstChild != null){
+                    element.setAttribute("style", "display:none");
+                    element.removeChild(element.firstChild);
+           }
+      }
+
+      function applyJobClonesNamesRegex() {
+
+            var regexStrings = document.configForm.jobRegex;
+            var overrides = document.configForm.regexGroup;
+            var elements = getJobElements("input", "job");
+
+            for (var index = 0 ; index < elements.length ; index++)  {
+
+                elements[index].value = fix(regexStrings, overrides, elements[index].value);
+                validateJobNameInput(elements[index]);
+            }
+      }
+
+      //replace the regex matches in each job name textbox with the configured override
+      function fix(regexStrings, overrides, value) {
+
+            //foreach regex
+            for (var regexIndex = 0 ; regexIndex < regexStrings.length ; regexIndex++) {
+
+                //get the regex value and its replacement if there's a match
+                var regexString = regexStrings[regexIndex].value;
+                var override = overrides[regexIndex].value;
+
+                //ignore empty configs
+                if (regexString == "" || regexString == null ||
+                    override == "" || override == null) {
+                    continue;
+                }
+
+                //apply the regex
+                var regex = new RegExp(regexString);
+                var matches = regex.exec(value);
+                if (matches != null) {
+
+                    //find the location of the string that matches the part of the regex that's between the first ()
+                    var matched = matches[1];
+                    var index = value.indexOf(matched);
+
+                    //take the prefix and suffix to/from it
+                    var prefix = value.substring(0, index);
+
+                    var replacementEndIndex = index + matched.length;
+                    var suffix = replacementEndIndex >= value.length ? "" : value.substring(replacementEndIndex);
+
+                    //"override" by taking the prefix and the suffix and inserting the override between them,
+                    //discarding the actual match
+                    value = prefix + override + suffix;
+                }
+            }
+
+            return value;
+      }
+
+    //undo the changes done by regexes and user input to the job target names input textboxes
+    function resetJobClonesNames() {
+
+        //collect the name of the jobs
+        var jobsNames = getJobElements("*", "name");
+
+        //collect the job text boxes
+        var jobsBoxes = getJobElements("input", "job");
+
+        //set the name of each target job textbox to the name of the job (default value)
+        for (var index = 0 ; index < jobsNames.length ; index++)  {
+
+            //jobsNames and jobsBoxes are collected in the same manner and order, so the index is shared
+            jobsBoxes[index].value = jobsNames[index].textContent;
+            validateJobNameInput(jobsBoxes[index]);
+        }
+    }
+
+    //function to check all the "disable job" checkboxes
+    function disableAllJob(value) {
+
+      //get all input elements inside the "jobTargets" container - containing the source->target mapping
+      //var divID = document.getElementById("jobTargets");
+      //var inputs = divID.getElementsByTagName("input");
+      var inputs = getJobElements("input" , "disableAfterCreate");
+      for (var i=0; i < inputs.length; i++) {
+            inputs[i].checked = value;
+      }
+    }
+
+    //get all elements contained in jobTargets container, of type tagName whose name starts with prefix.
+     function getJobElements(tagName, prefix){
+
+        //get all <tagName> elements contained in jobTargets container
+        var divID = document.getElementById("jobTargets");
+        var inputs = divID.getElementsByTagName(tagName);
+
+        //collect all elements that ...
+        var elements = new Array();
+        for (var i=0; i < inputs.length; i++) {
+
+                var input = inputs[i];
+                //start with the prefix
+                if (input.id.startsWith(prefix)) {
+                        elements.push(input);
+                }
+        }
+
+        return elements;
+     }
+
+    //disable the all-clones view textbox if it's not checked.
+    function targetViewNameOnClick (input){
+
+        document.configForm.targetViewName.disabled = !document.configForm.targetViewName.disabled;
+        checkBoxViewValidation(input);
+    }
+
+    //validate chosen hierarchic view name is not duplicated
+    function hierarchicViewNameOnClick (input){
+
+        //all hierarchic view checkboxes start with "cv_" by convention
+        var hierarchicViewCheckBox =  "cv_";
+
+        //get warning and error elements by naming convention.
+        //if element cv_{id} then {id}(Warning/Error)Message is the container's id.
+        var cbIdentifier = input.name.substring(hierarchicViewCheckBox.length);
+        var warningTd = document.getElementById((cbIdentifier)+"WarningMessage");
+        var errorTd = document.getElementById((cbIdentifier)+"ErrorMessage");
+
+        removeWarning(warningTd);
+        removeErrorAndUpdateCloneButton(errorTd);
+
+        checkBoxViewValidation(input);
+    }
+
+
+// ]]></script>
+
+    <!-- set title, get the whole jenkins theme -->
+    <l:layout title="step 3: Define cloning targets">
+
+        <!-- make our content appear in relevant container -->
+        <l:main-panel>
+
+            <p>step 3: Define cloning targets</p>
+
+            <f:form action="saveCloneTargetConfiguration" name="configForm" method="POST">
+
+                <table>
+
+                    <!-- ~~~~~~~~~~~~~~~~~~~~~~ target view section ~~~~~~~~~~~~~~~~~~~~~~~~~
+                    this is a checkbox and input text element. if the checkbox is checked, the
+                    text element value is the name of a "targetView" that will be created by jenkins,
+                    and that will contain all the jobs we are now cloning.
+                    -->
+                    <tr>
+                        <th>Select a target view to contain all the newly cloned jobs (or uncheck to cancel)</th>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="isBuildTargetView" checked="true"
+                                onClick="targetViewNameOnClick(this)"
+                                />
+                        </td>
+
+                        <!-- note the naming convention for the name and error containers:
+                        "targetView{Name/ErrorMessage/WarningMessage}" -->
+                        <td>
+                            <f:textbox name="targetViewName" onChange="validateViewNameInput(this)" value="allClones"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="targetViewNameErrorMessage" class="error" style="display:none" ></td>
+                    </tr>
+                     <tr>
+                           <td id="targetViewNameWarningMessage"  style="display:none" ></td>
+                     </tr>
+
+                    <!--TODO remove hierarchic cloned views targets section: deprecated-->
+                    <!-- ~~~~~~~~~~~~~~~~~~~~~~ hierarchic cloned views targets section ~~~~~~~~~~~~~~~~~~~~~~~~~
+                    there are views that lead to the jobs that we've chosen to clone.
+                    the top most views are seen in the tab directly when you log in to jenkins.
+                    you can define for each such source root a target root , and the entire views branch
+                    (as in segment of views tree) will be copied, but the root of the new branch
+                     will be named as you have chosen. -->
+                    <tr>
+                        <th>define the cloned tab-views names</th>
+                    </tr>
+
+                    <j:forEach var="view" items="${it.getTabViewsToClone()}">
+                        <tr>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    name="cv_${view.getViewName()}"
+                                    onClick="hierarchicViewNameOnClick(this)"
+                                />
+                                ${view.getViewName()}
+                            </td>
+
+                            <!-- note the naming convention for the name and error containers:
+                            "view.getViewName(){Name/ErrorMessage/WarningMessage}" -->
+                            <td>
+                                <f:textbox
+                                    name="${view.getViewName()}"
+                                    id="${view.getViewName()}"
+                                    onChange="validateViewNameInput(this)"
+                                    value="${view.getViewName()}-clone"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td id="${view.getViewName()}ErrorMessage" class="error"  style="display:none"></td>
+                        </tr>
+                        <tr>
+                            <td id="${view.getViewName()}WarningMessage" style="display:none" ></td>
+                        </tr>
+                    </j:forEach>
+
+                    <!-- ~~~~~~~~~~~~~~~~~~~~~~ target labels section ~~~~~~~~~~~~~~~~~~~~~~~~~
+                    each of the jobs that were selected for cloning may be set to run on specific nodes/labels.
+                    this feature allows to map currently used labels, to other possible labels.
+                    when branching a private branch, you can easily dedicate a slave for your own branch
+                    by setting all the target labels to be your slave node.
+                    -->
+                    <tr>
+                        <th>define the labels to use in the cloned jobs</th>
+                    </tr>
+
+                    <!-- for each of the currently used labels... -->
+                    <j:forEach var="usedLabel" items="${it.getLabelMappingKeys()}">
+                        <tr>
+                            <td>${usedLabel}</td>
+                            <td>
+                                <!-- show a dropbox ... -->
+                                <select name="${usedLabel}SelectedLabel">
+                                    <!-- with an empty default ... -->
+                                    <option value="--empty--" selected="selected">
+                                        --empty--
+                                    </option>
+                                    <!-- and all the labels from the server ... -->
+                                    <j:forEach var="possibleLabel" items="${app.getLabels()}">
+
+                                        <j:choose>
+
+                                            <!-- use the current label as the selected one -->
+                                            <j:when test="${possibleLabel.getName().equalsIgnoreCase(usedLabel)}">
+                                                <option value="${possibleLabel.getName()}" selected="selected">
+                                                    ${possibleLabel.getName()}
+                                                </option>
+                                            </j:when>
+
+                                            <!-- all other label options not selected -->
+                                            <j:otherwise>
+                                                <option value="${possibleLabel.getName()}">
+                                                    ${possibleLabel.getName()}
+                                                </option>
+                                            </j:otherwise>
+                                        </j:choose>
+                                    </j:forEach>
+                                </select>
+                            </td>
+                        </tr>
+                    </j:forEach>
+
+                    <!-- ~~~~~~~~~~~~~~~~~~~~~~ target scm section ~~~~~~~~~~~~~~~~~~~~~~~~~
+                    some of the jobs to clone checkout sources from some SCM.
+                    you can map these urls to some other url that should be used in the cloned job.
+                    this is good for when you want to branch.
+                    map the current url to the url of the branch, and you checkout and polling will
+                    be taken from there.
+                    only svn supported currently.
+                    -->
+                    <tr>
+                        <th>define the subversion scms to use in the cloned jobs</th>
+                    </tr>
+
+                    <!-- foreach currently used SCM url -->
+                    <j:forEach var="usedScm" items="${it.getScmMappingKeys()}" varStatus="loop">
+                        <tr>
+                            <td>${usedScm}</td>
+                            <td>
+                                <f:textbox name="${loop.index}SelectedScm" value="${usedScm}"/>
+                            </td>
+                        </tr>
+                    </j:forEach>
+
+
+                    <!-- ~~~~~~~~~~~~~~~~~~~~~~ target job names section ~~~~~~~~~~~~~~~~~~~~~~~~~
+                    this section allows you to use regexes to bulk-rename the jobs that
+                    were selected for cloning. define a regex and in it a group, by encapsulating it with
+                     (). in the textbox next to it, define an overriding value.
+                     the regex will be applied on all names, and if a match for the group is found, it
+                     will be replaced with the overridding value.
+
+                     below are some defaults that might give an exmaple on how to use.-->
+
+                    <tr>
+                        <th>define jobs regex expressions and overriding values</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <f:textbox name="jobRegex"  value="^(\w+)-\w+-\w+-.*$"/>
+                        </td>
+                        <td>
+                            <f:textbox name="regexGroup" value="ALM"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <f:textbox name="jobRegex" value="^\w+-(\w+)-\w+-.*$"/>
+                        </td>
+                        <td>
+                            <f:textbox name="regexGroup" value="Apollo"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <f:textbox name="jobRegex" value="^\w+-\w+-(\w+)-.*$"/>
+                        </td>
+                        <td>
+                            <f:textbox name="regexGroup" value="Compile"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <f:textbox name="jobRegex" value=""/>
+                        </td>
+                        <td>
+                            <f:textbox name="regexGroup" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <f:textbox name="jobRegex" value=""/>
+                        </td>
+                        <td>
+                            <f:textbox name="regexGroup" value=""/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><button type="button" onClick="applyJobClonesNamesRegex()">apply!</button></td>
+                        <td><button type="button" onClick="resetJobClonesNames()">reset</button></td>
+                    </tr>
+                </table>
+
+                <table name="jobTargets" id="jobTargets" border="0">
+                     <tr>
+                            <th align="left">Job To Clone</th>
+                            <th></th>
+                            <th></th>
+                            <th>Disable</th>
+                    </tr>
+                    <j:forEach var="job" items="${it.getJobsToClone()}">
+
+                        <tr>
+                            <td id="name${job.getFullDisplayName()}">${job.getFullDisplayName()} </td>
+                            <td align="left"> to </td>
+                             <td align="left"><input  type="text" id="job${job.getFullDisplayName()}" name="job${job.getFullDisplayName()}" size="50" onChange="validateJobNameInput(this)"  value="${job.getFullDisplayName()}"  /></td>
+                            <td><input type="checkbox" id="disableAfterCreate_${job.getFullDisplayName()}" name="disableAfterCreate_${job.getFullDisplayName()}" checked="true" /></td>
+                        </tr>
+                        <tr>
+                            <td id="job${job.getFullDisplayName()}ErrorMessage" class="error" style="display:none"></td>
+                        </tr>
+                    </j:forEach>
+                    <tr align="left">
+                        <th>Disable ALL jobs</th>
+                        <th><input type="checkbox" id="disableAll"  onClick="disableAllJob(this.checked)"/></th>
+                    </tr>
+                </table>
+
+                <table id="submitClone">
+                    <tr><th><f:submit value="Clone!"/></th></tr>
+                </table>
+
+                <!-- workaround for js not having onload event for html elements.
+                      bulk validate all jobs names.
+                 -->
+
+                 <script language="JavaScript" type="text/javascript">           //<![CDATA[
+
+                         var inputs = getJobElements("input", "job");
+                         for (var i=0; i < inputs.length; i++) {
+                         validateJobNameInput(inputs[i]);
+                         }
+                         validateViewNameInput(document.configForm.targetViewName);
+                  //]]>
+                  </script>
+
+            </f:form>
+
+
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

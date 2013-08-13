@@ -1,0 +1,4 @@
+<div>
+    extends the "conditional-trigger" plugin with an additional trigger: the ability to "poll" a job.
+    trigger iff the job has been built (with a specified result) since we last polled it.
+</div>

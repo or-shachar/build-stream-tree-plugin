@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" trim="false">
+
+<!-- since javascript is not well formed xml, we embed javascript functions inside CDATA elements,
+else jelly processing complains. -->
+<![CDATA[
+<script language="JavaScript">
+
+//this function sets the value of all the checkboxes to equal the value parameter.
+function checkAll(value) {
+
+      //get all form input elements
+      var inputs = document.getElementsByTagName("input");
+
+      //foreach of them
+      for (i=0; i < inputs.length; i++) {
+
+         var input = inputs[i];
+
+         //that is a checkbox and is not the "select all" checkbox
+         if (input.type == "checkbox" && input.id != "selectAll") {
+
+            //set the checkbox value
+            input.checked = value;
+         }
+      }
+}
+</script>
+]]>
+
+    <l:layout title="step 1: Select jobs to clone from ${it.getView().getDisplayName()}">
+        <l:main-panel>
+            <p>step 1: Select jobs to clone from view <b>'${it.getView().getViewName()}</b>':</p>
+
+            <!-- we send the user data from this form to the CloneJobsAction.doProcessSelectedJobs -->
+            <f:form action="processSelectedJobs" name="jobsTable" method="POST">
+                <table>
+
+                    <tr>
+                        <th>Selected</th>
+                        <th>Name of Job to Clone</th>
+                    </tr>
+
+                    <tr>
+                        <!-- this element should be ignored by form submission, but bug in jenkins... -->
+                        <th><input type="checkbox" id="selectAll" onClick="checkAll(this.checked)"/></th>
+                        <td>Select ALL jobs</td>
+                    </tr>
+
+                    <!-- get all the jobs contained in this view (including jobs in nested views) -->
+                    <j:forEach var="job" items="${it.getHierarchicJobs()}">
+                        <tr>
+                            <!-- we bind the name of the submitted checkbox user input to the name of the job
+                            for easy use on the server side when processing this data -->
+                            <!-- TODO this causes a bug because jenkins only takes into account the part after a dot
+                            if it exists in the name, so 2 differently named projects
+                            i-am.nathan
+                            you-are-not.nathan
+                            will both get a name of "nathan" as far as jenkins is concerned, and they will be
+                            aggregated into an array of boolean which will cause a cast exception on serverside.
+                            work with integer index instead.
+                            -->
+                            <th><f:checkbox name="${job.getFullDisplayName()}"/></th>
+                            <td>${job.getFullDisplayName()}</td>
+                        </tr>
+                    </j:forEach>
+
+                    <tr><th><f:submit value="Select"/></th></tr>
+
+                </table>
+            </f:form>
+
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

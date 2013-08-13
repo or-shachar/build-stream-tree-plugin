@@ -1,0 +1,382 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.jenkins-ci.plugins</groupId>
+		<artifactId>plugin</artifactId>
+		<version>1.509.1</version>
+	</parent>
+
+    <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
+    <artifactId>jenkins-plugins-root</artifactId>
+    <packaging>pom</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>${project.artifactId}</name>
+
+    <modules>
+        <module>recursive-cancel-build</module>
+        <module>build-filter</module>
+        <module>BlameSubversion</module>
+        <!--
+        this isn't even 10% done...
+        <module>detritus</module>
+        -->
+        <module>job-branch-clone</module>
+        <!--
+        this can't be built after version 1.497 or something like that...
+        <module>user-as-email-resolver</module>
+        -->
+        <module>views-manager</module>
+        <module>promoted-builds</module>
+        <!--
+        deprecated, they turned this into part of the oo product. this was the original.
+        <module>oo</module>
+        -->
+        <!--
+        this was a nice idea, but it just requires too much maintanance, and doesn't give enough.
+        if only the dependencies could be generated automatically from the modules of this project...
+        <module>all-plugins-plugin</module>
+        -->
+        <module>conditional-trigger</module>
+        <module>job-polling-conditional-trigger</module>
+        <module>trivial-buildsteps</module>
+        <module>batch-or-shell</module>
+        <module>dynamic-groovy-view</module>
+        <!--
+        <module>parameterized-trigger</module>
+        -->
+        <module>upstream-job-archive-as-repository</module>
+
+        <module>downstream-logs</module>
+        <!-- this was just for innovation day...
+        <module>abstract-pipeline</module>
+        -->
+    </modules>
+
+    <properties>
+        <commons.version>1.509.1</commons.version>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>withCommons</id>
+            <modules>
+                <module>../commons/</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>maas</id>
+            <properties>
+                <nestedViews.version>1.10</nestedViews.version>
+                <conditionalBuildstep.version>1.2.1</conditionalBuildstep.version>
+                <runCondition.version>0.10</runCondition.version>
+                <join.version>1.15</join.version>
+                <subversion.version>1.44</subversion.version>
+                <copyartifact.version>1.27</copyartifact.version>
+                <mavenPlugin.version>1.509.1</mavenPlugin.version>
+                <parameterized-trigger.Version>2.17</parameterized-trigger.Version>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>maas devops releases</id>
+                    <url>http://mydtbld0023.isr.hp.com:8081/nexus/content/repositories/devops-releases/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>maas devops snapshots</id>
+                    <url>http://mydtbld0023.isr.hp.com:8081/nexus/content/repositories/devops-snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <!-- TODO: maas should import this nexus repo -->
+            <repositories>
+                <repository>
+                    <id>cd</id>
+                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/cd-public/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <!-- override parent settings by id -->
+                    <id>cd</id>
+                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/cd-public/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+        <profile>
+            <id>agm</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties>
+                <nestedViews.version>1.8</nestedViews.version>
+                <conditionalBuildstep.version>1.0</conditionalBuildstep.version>
+                <runCondition.version>0.8</runCondition.version>
+                <join.version>1.13</join.version>
+                <subversion.version>1.34</subversion.version>
+                <copyartifact.version>1.21</copyartifact.version>
+                <mavenPlugin.version>1.458</mavenPlugin.version>
+                <parameterized-trigger.Version>2.16</parameterized-trigger.Version>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>agm devops releases</id>
+                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/repositories/devops</url>
+                </repository>
+                <snapshotRepository>
+                    <id>agm devops snapshots</id>
+                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/repositories/devops</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <repositories>
+                <repository>
+                    <id>cd</id>
+                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/cd-public/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <!-- override parent settings by id -->
+                    <id>cd</id>
+                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/cd-public/</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.3.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.1.2</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <skipTests>true</skipTests>
+                        <testFailureIgnore>true</testFailureIgnore>
+                        <argLine>-Xmx512m</argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.1.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.4.3</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.6</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.5</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.hp.mercury.ci</groupId>
+                <artifactId>commons-core</artifactId>
+                <version>${commons.version}</version>
+            </dependency>
+
+            <!-- our jenkins has this plugin to support hierachic views -->
+            <dependency>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>nested-view</artifactId>
+                <version>${nestedViews.version}</version>
+            </dependency>
+
+
+            <!-- we need to relink configurations inside a conditional step -->
+            <dependency>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>conditional-buildstep</artifactId>
+                <version>${conditionalBuildstep.version}</version>
+            </dependency>
+
+            <!-- we need to relink configurations inside a conditional step -->
+            <dependency>
+                 <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>run-condition</artifactId>
+                <version>${runCondition.version}</version>
+            </dependency>
+
+            <!-- support for relinking join triggers -->
+            <dependency>
+                 <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>join</artifactId>
+                <version>${join.version}</version>
+            </dependency>
+
+            <!-- subversion plugin for scm triggering -->
+            <dependency>
+                 <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>subversion</artifactId>
+                 <version>${subversion.version}</version>
+            </dependency>
+
+            <!-- need this for relinking the artifacts to copy from parent project after project cloning -->
+            <dependency>
+                 <groupId>org.jenkins-ci.plugins</groupId>
+                 <artifactId>copyartifact</artifactId>
+                 <version>${copyartifact.version}</version>
+            </dependency>
+
+            <!-- need this to be able to process maven projects prebuilders and postbuilders for copy artifacts
+            relinking, also forwrapping maven project instances -->
+            <dependency>
+                 <groupId>org.jenkins-ci.main</groupId>
+                 <artifactId>maven-plugin</artifactId>
+                 <version>${mavenPlugin.version}</version>
+            </dependency>
+
+            <!-- define our plugins management, if they need to use each other's API it will be easier
+            to declare dependency -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>views-manager</artifactId>
+            </dependency>
+
+            <!--
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>oo</artifactId>
+            </dependency>
+            -->
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>job-branch-clone</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>conditional-trigger</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>job-polling-conditional-trigger</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>trivial-buildsteps</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>batch-or-shell</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <version>${parameterized-trigger.Version}</version>
+                <artifactId>parameterized-trigger</artifactId>
+            </dependency>
+
+            <!-- TODO change gorupid to conform -->
+            <!--
+            <dependency>
+                <groupId>com.hp.jenkins.plugins.alm</groupId>
+                <version>${project.version}</version>
+                <artifactId>user-as-email-resolver</artifactId>
+            </dependency>
+            -->
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>promoted-builds</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>BlameSubversion</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+                <artifactId>repository</artifactId>
+            </dependency>
+
+        </dependencies>
+
+    </dependencyManagement>
+
+</project>

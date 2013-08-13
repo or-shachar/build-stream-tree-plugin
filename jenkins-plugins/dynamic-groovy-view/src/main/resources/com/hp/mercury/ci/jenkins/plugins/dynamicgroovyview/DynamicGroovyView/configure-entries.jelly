@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" >
+
+    <f:entry title="required additional classpath jars from userContent" >
+        <f:textarea name="additionalClasspathJars" value='${it.additionalClasspathJars == null ? "" : it.additionalClasspathJars}' />
+    </f:entry>
+
+    <f:entry title="groovy script to execute" >
+        <f:textarea name="code" value='${it.code == null ? "" : it.code}' />
+    </f:entry>
+
+</j:jelly>

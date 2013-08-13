@@ -1,0 +1,84 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" >
+
+
+    <j:set var="id" value="${h.generateId()}"/>
+
+    <![CDATA[
+
+        <script language="javascript">
+
+            /*
+
+            because this entire content is sent to the browser for every build step added to the job,
+            we risk having multiple duplicate functions variables etc...
+            since we are the ones defining "batchOrShellMarker", we only execute the javascript code if
+            cachedServerFlows is not defined.
+
+            */
+
+            if (typeof batchOrShellMarker === 'undefined') {
+
+                var batchOrShellMarker = true;
+
+                window['setVisibility'] = function setVisiblity(id, visibility) {
+
+                    var e = document.getElementById(id);
+                    e.style.visibility = visibility ? 'visible' : 'hidden';
+                };
+
+            }
+
+        </script>
+
+    ]]>
+
+    <f:entry field="batch" title="Batch Script to Execute If Windows">
+        <f:textarea/>
+    </f:entry>
+
+    <tr>
+
+        <td class="setting-leftspace"><st:nbsp/></td>
+        <td class="setting-name">
+
+            <j:choose>
+                <j:when test="${instance.isSame()}">
+                    <input
+                        name="same"
+                        checked="true"
+                        type="checkbox"
+                        onClick="setVisibility('shell${id}', !this.checked)"
+                    />
+                </j:when>
+                <j:otherwise>
+                    <input
+                        name="same"
+                        type="checkbox"
+                        onClick="setVisibility('shell${id}', !this.checked)"
+                    />
+                </j:otherwise>
+            </j:choose>
+
+            Execute same script regardless if windows or linux.
+        </td>
+        <td class="setting-main"><st:nbsp/></td>
+    </tr>
+
+    <j:choose>
+        <j:when test="${instance.isSame()}">
+            <tr style="visibility:hidden;" id="shell${id}">
+                <td class="setting-leftspace"><st:nbsp/></td>
+                <td class="setting-name">Shell Script to Execute If Linux</td>
+                <td class="setting-main"><f:textarea field="shell"/></td>
+            </tr>
+        </j:when>
+        <j:otherwise>
+            <tr id="shell${id}">
+                <td class="setting-leftspace"><st:nbsp/></td>
+                <td class="setting-name" id="shell${id}">Shell Script to Execute If Linux</td>
+                <td class="setting-main"><f:textarea field="shell"/></td>
+            </tr>
+        </j:otherwise>
+    </j:choose>
+
+</j:jelly>

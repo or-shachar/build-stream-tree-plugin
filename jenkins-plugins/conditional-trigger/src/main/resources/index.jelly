@@ -1,0 +1,5 @@
+<div>
+    allows triggering a job according to a condition that is evaluated on a timed basis.
+    comes with a condition where this job is executed if some other job (maybe this one) executed in the last
+    several hours.
+</div>

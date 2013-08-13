@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
+        <artifactId>jenkins-plugins-root</artifactId>
+        <version>1.509.1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <version>1.509.1</version>
+    <artifactId>conditional-trigger</artifactId>
+    <packaging>hpi</packaging>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.hp.mercury.ci</groupId>
+            <artifactId>commons-core</artifactId>
+        </dependency>
+
+        <!-- damn plugin won't build without this..
+        maybe a bug in jenkins? regression maven hpi plugin or jenkins plugin pom -->
+        <!--
+
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>ui-samples-plugin</artifactId>
+            <version>1.509.1</version>
+            <scope>optional</scope>
+        </dependency>
+        -->
+    </dependencies>
+
+
+</project>

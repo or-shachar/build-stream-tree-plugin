@@ -1,0 +1,130 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
+        <artifactId>upstream-job-archive-as-repository</artifactId>
+        <!--
+        <version>0.9-local-enhance</version> -->
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>repository</artifactId>
+
+    <name>Jenkins Maven Repository Server Plugin</name>
+    <description>This plug-in exposes project builds as a maven repository so the artifacts can be picked up by
+        downstream builds or other systems.
+    </description>
+    <packaging>hpi</packaging>
+
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/Jenkins+Maven+Repository+Server</url>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+                <version>1.4</version>
+
+                <!-- nathang: bugfix, avoid NoSuchMethod thrown by ant on UnknownElement.setRealThing -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant</artifactId>
+                        <version>1.8.4</version>
+                    </dependency>
+                </dependencies>
+
+                <executions>
+
+                    <execution>
+                        <id>copy-the-source</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <!-- nathang: fix compilation error "incompatible api" -->
+                            <providerSelection>1.7</providerSelection>
+
+                            <source>
+
+                                //nathang: resolve a bug that makes it impossible to build on windows...
+                                pom.properties['main.basedir'] = project.parent.basedir.absolutePath.replace('\\','/');
+
+                                //nathang: remove hardcoded group id...
+                                //nathang: debug...
+                                println 'groupId=' + "${project.groupId}";
+                                String groupIdPath = "${project.groupId}".replace(".","/");
+                                println 'groupIdPath=' + groupIdPath;
+
+                                String target =
+                                    pom.properties['main.basedir'] + "/target/classes/tools/" + groupIdPath +
+                                    "/jenkins-maven-plugin/${project.version}";
+                                String src =
+                                    "${settings.localRepository}/" + groupIdPath +
+                                    "/jenkins-maven-plugin/${project.version}";
+
+                                //nathang: debug...
+                                println 'src=' + src;
+                                println 'target=' + target;
+
+                                def a = new AntBuilder();
+                                a.mkdir(dir:target);
+
+                                a.copy(todir: target) {
+                                    fileset(dir:src, includes:"*.jar")
+                                }
+                                a.copy(todir: target) {
+                                    fileset(dir:src, includes:"*.pom")
+                                }
+
+                            </source>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.jvnet.hudson.plugins</groupId>
+            <artifactId>git</artifactId>
+            <version>1.1.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <!--<version>1.417</version>-->
+            <artifactId>maven-plugin</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.collections</groupId>
+            <artifactId>google-collections</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>token-macro</artifactId>
+            <version>1.2</version>
+            <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>maven-plugin</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jenkins-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
+
+
+</project>

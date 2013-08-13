@@ -1,0 +1,80 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
+        <artifactId>jenkins-plugins-root</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>all-plugins-plugin</artifactId>
+    <packaging>hpi</packaging>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>views-manager</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>oo</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>job-branch-clone</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>conditional-trigger</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>trivial-buildsteps</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>batch-or-shell</artifactId>
+        </dependency>
+
+        <!--
+         this has a specified version of our build, to support our own version of
+         parameterized trigger which should solve a sort of deadlock during restart.
+         the parent pom's version is the official unaugmented release...
+        -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>parameterized-trigger</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <!-- TODO change gorupid to conform -->
+            <groupId>com.hp.jenkins.plugins.alm</groupId>
+            <artifactId>user-as-email-resolver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>promoted-builds</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>BlameSubversion</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>repository</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

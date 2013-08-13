@@ -1,0 +1,32 @@
+.pipeline-container {
+    overflow:default
+}
+
+.pipeline-segment {
+    width:150px;
+    height:150px;
+    background-color:#2ECCFA;
+    float:left;
+}
+
+.pipeline-segment-text {
+    vertical-align:middle;
+    text-align:center;
+    text-wrap:none;
+    overflow:hidden;
+    white-space:nowrap;
+}
+
+.pipeline-active {
+    background-color:yellow;
+}
+
+.pipeline-separator {
+    width:20px;
+    height:100px;
+    float:left;
+}
+
+th,td {
+    text-align:center;
+}
