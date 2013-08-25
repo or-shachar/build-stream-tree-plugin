@@ -12,6 +12,7 @@ import hudson.model.ViewGroup
 import hudson.scm.ChangeLogSet
 import hudson.slaves.EnvironmentVariablesNodeProperty
 import jenkins.model.Jenkins
+import hudson.matrix.MatrixConfiguration
 
 import java.sql.Timestamp
 
@@ -204,10 +205,12 @@ def associateBuildToCluster(treeNode) {
 
     def be = treeNode.value
 
-
     if (be instanceof BuildStreamTreeEntry.BuildEntry) {
 
         def job = be.run.parent
+        if (job instanceof MatrixConfiguration) {
+            job = job.parent
+        }
 
         def containingViews = pipelineClusterViews.findResults { view ->
             viewContains(view, job) ? view : null
@@ -270,7 +273,10 @@ if (pipelineClusteringView != null) {
 
         buildToClusterAssociation = [:]
 
-        forest.each { associateBuildToCluster(it) }
+        forest.each { root ->
+
+            associateBuildToCluster(root)
+        }
 
         if (!buildToClusterAssociation.isEmpty()) {
 
@@ -354,12 +360,13 @@ if (pipelineClusteringView != null) {
 
                                 var coord = coordinates[j];
                                 if (coord.indexOf(prefix) == 0) {
-                                    expanded = true;
+
                                     if (coord === prefix) {
                                         rows[i].classList.add("clusterSelected");
                                     }
                                     else {
                                         rows[i].classList.remove("clusterSelected");
+                                        expanded = true;
                                     }
                                     break;
                                 }
@@ -485,8 +492,8 @@ if (pipelineClusteringView != null) {
                         def clusterName = pcv.viewName
                         def clusterTreeNodes = buildToClusterAssociation.get(clusterName)
                         l.td(clusterNodes: clusterTreeNodes.collect{"\"${recGetNestingString(it)}\""}.toString(),
-                            onmouseover: "collapseTreeByCluster(this.getAttribute(\"clusterNodes\"))",
-                            onclick: "selectCluster(this)") {
+                                onmouseover: "collapseTreeByCluster(this.getAttribute(\"clusterNodes\"))",
+                                onclick: "selectCluster(this)") {
                             l.text(" ")
                             renderBallForCluster(l, clusterTreeNodes)
                         }
@@ -495,7 +502,7 @@ if (pipelineClusteringView != null) {
             }
 
             //we found a cluster that's right for us, now we stop
-            break;
+            break
         }
     }
 }
