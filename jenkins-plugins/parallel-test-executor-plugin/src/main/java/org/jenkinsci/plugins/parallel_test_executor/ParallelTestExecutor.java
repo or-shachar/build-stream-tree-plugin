@@ -49,7 +49,7 @@ public class ParallelTestExecutor extends Builder {
 
     private Boolean currParams;
     private Boolean exposedSCM;
-    private List<AbstractBuildParameters> configs;
+    private List<AbstractBuildParameters> parameterConfigs;
 
     @DataBoundConstructor
     public ParallelTestExecutor(Parallelism parallelism, String testJob, String patternFile, String testReportFiles, Boolean currParams, Boolean exposedSCM, List<AbstractBuildParameters> parameterConfigs) {
@@ -59,7 +59,7 @@ public class ParallelTestExecutor extends Builder {
         this.testReportFiles = testReportFiles;
         this.currParams = currParams;
         this.exposedSCM = exposedSCM;
-        this.configs = Util.fixNull(parameterConfigs);
+        this.parameterConfigs = Util.fixNull(parameterConfigs);
     }
 
     public Boolean getExposedSCM() {
@@ -94,6 +94,9 @@ public class ParallelTestExecutor extends Builder {
         return testReportFiles;
     }
 
+    public List<AbstractBuildParameters> getParameterConfigs() {
+        return parameterConfigs;
+    }
     /**
      * {@link TestClass}es are divided into multiple sets of roughly equal size.
      */
@@ -206,7 +209,7 @@ public class ParallelTestExecutor extends Builder {
         // that's why the first argument is ABORTED.
         BlockingBehaviour blocking = new BlockingBehaviour(Result.ABORTED, Result.UNSTABLE, Result.FAILURE);
         final AtomicInteger iota = new AtomicInteger(0);
-        List<AbstractBuildParameters> configsCopy = new ArrayList<AbstractBuildParameters>(this.configs);
+        List<AbstractBuildParameters> configsCopy = new ArrayList<AbstractBuildParameters>(this.parameterConfigs);
         configsCopy.add(
             new AbstractBuildParameters() {
             @Override

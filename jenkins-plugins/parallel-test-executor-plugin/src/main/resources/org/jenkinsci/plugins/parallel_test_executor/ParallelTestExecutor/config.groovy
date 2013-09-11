@@ -19,10 +19,6 @@ f.entry(title:"Test report directory in the test job",field:"testReportFiles") {
     f.textbox()
 }
 
-f.entry(title:"instance: " + instance) {
-
-}
-
 f.advanced {
     f.block {
         f.hetero_list(name:"parameterConfigs",
