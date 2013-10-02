@@ -1,4 +1,0 @@
-<div>
-this type of view allows you to specify groovy code that you want evaluated and rendered any time you access the url.
-good for creating custom portals, dashboards etc...
-</div>

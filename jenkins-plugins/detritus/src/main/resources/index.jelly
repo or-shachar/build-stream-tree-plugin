@@ -1,8 +1,0 @@
-
-<div>
-  Allows to configure a new project type "Detritus Project".
-  </br>When this project is downstream of some test project,
-  once the failed tests are determined the Detritus Project kicks in, and iterates revisions,
-  creating a mapping between revision and test failure.
-  </br>this effectively determines who broke what and when.
-</div>

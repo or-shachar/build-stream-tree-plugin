@@ -1,4 +1,0 @@
-<div>
-allows defining a view that displays the evaluated content of a groovy file, same as *.jelly or *.groovy files for plugins.
-this is good for building custom dashboards and other GUIs, and have them hosted on jenkins without need of restart.
-</div>
