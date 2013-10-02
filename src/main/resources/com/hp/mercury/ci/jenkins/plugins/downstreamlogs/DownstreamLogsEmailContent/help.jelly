@@ -1,0 +1,3 @@
+<div>
+    use $BUILD_STREAM_TREE inside of email template to embed the build's build-stream-tree in the email.
+</div>

@@ -1,53 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.hp.mercury.ci</groupId>
-	<artifactId>ci-root</artifactId>
-	<packaging>pom</packaging>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>${project.artifactId}</name>
+    <parent>
+        <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
+        <artifactId>jenkins-plugins-root</artifactId>
+        <version>1.509.1</version>
+    </parent>
 
-    <!--
-    This pom is an aggregator for the modules, BUT IT IS NOT A PARENT FOR THEM.
-    don't put anything here that you would like them to inherit, such as repositories etc.
-    -->
+    <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
+    <artifactId>downstream-logs</artifactId>
+    <version>1.509.1.13</version>
 
-	<modules>
-		<module>commons</module>
-		<module>maven-plugins</module>
-        <module>jenkins-plugins</module>
-    </modules>
+    <packaging>hpi</packaging>
 
-    <profiles>
-        <profile>
-           <id>maas</id>
-            <pluginRepositories>
-                <pluginRepository>
-                    <!-- override parent settings by id -->
-                    <id>cd</id>
-                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/cd-public/</url>
-                    <releases><enabled>true</enabled></releases>
-                    <snapshots><enabled>false</enabled></snapshots>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
-        <profile>
-           <id>agm</id>
-            <pluginRepositories>
-                <pluginRepository>
-                    <!-- override parent settings by id -->
-                    <id>cd</id>
-                    <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/cd-public/</url>
-                    <releases><enabled>true</enabled></releases>
-                    <snapshots><enabled>false</enabled></snapshots>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
-    </profiles>
+    <dependencies>
+        <!--
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>parameterized-trigger</artifactId>
+        </dependency>
+        -->
+
+        <!-- damn plugin won't build without this..
+        maybe a bug in jenkins? regression maven hpi plugin or jenkins plugin pom -->
+        <!--
+
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>ui-samples-plugin</artifactId>
+            <version>1.509.1</version>
+            <scope>optional</scope>
+        </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>email-ext</artifactId>
+            <version>2.30.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hp.mercury.ci</groupId>
+            <artifactId>commons-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>nested-view</artifactId>
+        </dependency>
 
 
+    </dependencies>
 
 </project>
