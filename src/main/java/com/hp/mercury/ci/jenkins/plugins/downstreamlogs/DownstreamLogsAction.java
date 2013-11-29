@@ -30,6 +30,9 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
     // a reference.
     private Run run;
 
+    @Deprecated
+    private transient String on;
+
     public DownstreamLogsAction(Run build) {
         this.run = build;
     }

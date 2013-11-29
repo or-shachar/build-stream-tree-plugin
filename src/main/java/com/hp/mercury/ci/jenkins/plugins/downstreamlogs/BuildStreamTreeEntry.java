@@ -20,6 +20,9 @@ public abstract class BuildStreamTreeEntry {
         private final String jobName;
         private final int buildNumber;
 
+        @Deprecated
+        transient private String path;
+
         public Run getRun() {
             if (run == null) {
                 final Job job = Jenkins.getInstance().getItemByFullName(jobName, Job.class);
