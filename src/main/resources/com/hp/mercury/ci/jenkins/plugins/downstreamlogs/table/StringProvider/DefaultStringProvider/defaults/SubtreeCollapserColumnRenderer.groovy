@@ -43,7 +43,7 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
 
         boolean isLeaf = this.content.findTreeNodeForBuildEntry(buildEntry).children.isEmpty()
 
-        l.td(data:rowCounter, prefix:getNestingString(buildEntry)) {
+        l.td(data:rowCounter, prefix:getNestingString(buildEntry), jobName: buildEntry.jobName) {
             if (isLeaf) {
                 l.text(" ")
             }
@@ -59,12 +59,12 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
         rowCounter--
-        l.td(data:rowCounter, prefix:getNestingString(jobEntry)) { l.text(" ") }
+        l.td(data:rowCounter, prefix:getNestingString(jobEntry), jobName: jobEntry.jobName) { l.text(" ") }
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
         rowCounter--
-        l.td(data:rowCounter, prefix:getNestingString(stringEntry)) { l.text(" ") }
+        l.td(data:rowCounter, prefix:getNestingString(stringEntry), jobName: stringEntry.string) { l.text(" ") }
     }
 }
