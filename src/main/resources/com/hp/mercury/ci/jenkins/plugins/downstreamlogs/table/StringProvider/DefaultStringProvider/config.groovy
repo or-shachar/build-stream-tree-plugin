@@ -10,7 +10,7 @@ def dl = namespace("/lib/downstream-logs")
 
 dl.dropdownList(title: "Select Default", name: "selectedDefaultName") {
 
-    StringProvider.DefaultStringProvider.getDefaultsList().each { defaultName ->
+    StringProvider.DefaultStringProvider.getDefaultsList().sort().each { defaultName ->
 
         context.setVariable("defaultText", StringProvider.DefaultStringProvider.getDefaultText(defaultName))
 
