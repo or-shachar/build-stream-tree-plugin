@@ -24,18 +24,9 @@ public class DownstreamLogsCachingBuildListener extends RunListener<Run> {
         super.onFinalized(run);
 
         if (DownstreamLogsAction.getDescriptorStatically().getCacheBuilds()) {
-            final PrintStream printStream;
-            try {
-                printStream = new PrintStream(new FileOutputStream(run.getLogFile(), true));
-                printStream.println("Caching downstream builds for Build Stream Tree");
-                DownstreamLogsUtils.getDownstreamRuns(run);
-                printStream.println("Caching completed");
-                printStream.flush();
-                printStream.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-
+            Log.debug("Starting caching downstream builds for " + run.getFullDisplayName());
+            DownstreamLogsUtils.getDownstreamRuns(run);
+            Log.debug("Done caching downstream builds for " + run.getFullDisplayName());
         }
 
     }
