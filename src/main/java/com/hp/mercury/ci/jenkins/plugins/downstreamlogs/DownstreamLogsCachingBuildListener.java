@@ -24,8 +24,10 @@ public class DownstreamLogsCachingBuildListener extends RunListener<Run> {
         super.onFinalized(run);
 
         final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty)run.getParent().getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
-        boolean overridingEmbed = (property != null) && ((property.getOverrideGlobalConfig()) && (property.getCacheBuild()));
-        if (DownstreamLogsAction.getDescriptorStatically().getCacheBuilds() || (overridingEmbed)) {
+        boolean cache = ((property != null) && (property.getOverrideGlobalConfig())) ?
+                (property.getCacheBuild()) :
+                DownstreamLogsAction.getDescriptorStatically().getCacheBuilds();
+        if (cache) {
             Log.debug("Starting caching downstream builds for " + run.getFullDisplayName());
             DownstreamLogsUtils.getDownstreamRuns(run);
             Log.debug("Done caching downstream builds for " + run.getFullDisplayName());
