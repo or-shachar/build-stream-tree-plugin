@@ -1,6 +1,7 @@
 package com.hp.mercury.ci.jenkins.plugins.downstreamlogs;
 
 import hudson.Extension;
+import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 
@@ -23,7 +24,8 @@ public class DownstreamLogsCachingBuildListener extends RunListener<Run> {
     public void onFinalized(Run run) {
         super.onFinalized(run);
 
-        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty)run.getParent().getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
+        final Job parent = run instanceof MatrixRun ? ((MatrixRun) run).getParentBuild().getParent() : run.getParent();
+        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty) parent.getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
         boolean cache = ((property != null) && (property.getOverrideGlobalConfig())) ?
                 (property.getCacheBuild()) :
                 DownstreamLogsAction.getDescriptorStatically().getCacheBuilds();

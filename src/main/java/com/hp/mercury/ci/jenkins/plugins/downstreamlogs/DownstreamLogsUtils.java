@@ -10,6 +10,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixRun;
 import hudson.model.Cause;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -95,7 +96,8 @@ public class DownstreamLogsUtils {
 
     public static Collection<BuildStreamTreeEntry> getDownstreamRuns(Run run) {
 
-        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty)run.getParent().getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
+        final Job parent = run instanceof MatrixRun ? ((MatrixRun) run).getParentBuild().getParent() : run.getParent();
+        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty) parent.getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
         boolean cache = ((property != null) && (property.getOverrideGlobalConfig())) ?
                 (property.getCacheBuild()) :
                 DownstreamLogsAction.getDescriptorStatically().getCacheBuilds();
