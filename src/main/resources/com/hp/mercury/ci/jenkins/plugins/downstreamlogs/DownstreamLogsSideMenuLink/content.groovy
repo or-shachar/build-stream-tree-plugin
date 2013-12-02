@@ -451,7 +451,12 @@ try { renderTreeForBuild(my.build) }
 catch (Exception e) {
     Log.warning("failed to display build-stream-tree for $my.build")
     Log.throwing("content.groovy", "", e)
-    l.text("failed rendering build stream tree: $e.message")
+    def baos = new ByteArrayOutputStream();
+    PrintStream out = new PrintStream(baos);
+    e.printStackTrace(out);
+    out.flush();
+    out.close();
+    l.text("failed rendering build stream tree: " + new String(baos.toByteArray()));
 }
 
 

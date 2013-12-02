@@ -62,6 +62,10 @@ public class DownstreamLogsManualEmebedViaJobProperty extends JobProperty {
     }
 
     public Boolean getCacheBuild() {
+        //backwards compatability
+        if (cacheBuild == null) {
+            cacheBuild = DownstreamLogsAction.getDescriptorStatically().getCacheBuilds();
+        }
         return cacheBuild;
     }
 
