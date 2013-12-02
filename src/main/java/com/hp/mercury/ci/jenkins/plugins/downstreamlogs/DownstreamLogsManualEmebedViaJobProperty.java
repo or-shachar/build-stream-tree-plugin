@@ -29,6 +29,7 @@ public class DownstreamLogsManualEmebedViaJobProperty extends JobProperty {
     private Boolean embedInJob;
     private Boolean embedInBuild;
     private Boolean overrideGlobalConfig;
+    private Boolean cacheBuild;
 
     public Boolean getEmbedInBuild() {
         return embedInBuild;
@@ -60,15 +61,25 @@ public class DownstreamLogsManualEmebedViaJobProperty extends JobProperty {
         this.embedInJob = embedInJob;
     }
 
+    public Boolean getCacheBuild() {
+        return cacheBuild;
+    }
+
+    public void setCacheBuild(Boolean cacheBuild) {
+        this.cacheBuild = cacheBuild;
+    }
+
     @DataBoundConstructor
     public DownstreamLogsManualEmebedViaJobProperty(
             Boolean overrideGlobalConfig,
             Boolean embedInJob,
-            Boolean embedInBuild) {
+            Boolean embedInBuild,
+            Boolean cacheBuild) {
 
         this.overrideGlobalConfig = overrideGlobalConfig;
         this.embedInJob = embedInJob;
         this.embedInBuild = embedInBuild;
+        this.cacheBuild = cacheBuild;
     }
 
     //this doesn't work for matrix type builds, don't ask me why, probably really bad design..
@@ -102,7 +113,7 @@ public class DownstreamLogsManualEmebedViaJobProperty extends JobProperty {
                             boolean active = config.contains(DownstreamLogsConfigurator.class.getSimpleName());
 
                             //we always add the job property, sometimes it's on, sometimes it's off.
-                            job.addProperty(new DownstreamLogsManualEmebedViaJobProperty(active, active, active));
+                            job.addProperty(new DownstreamLogsManualEmebedViaJobProperty(active, active, active, active));
                         } catch (IOException e) {
                             Log.warning("failed to add DownstreamLogsManualEmebedViaJobProperty to job " + job.getFullDisplayName());
                             Log.throwing(DownstreamLogsManualEmebedViaJobProperty.class.getName(), "init", e);

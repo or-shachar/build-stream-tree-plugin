@@ -17,4 +17,8 @@ f.optionalBlock(
     f.entry(field:"embedInBuild", title:"Embed build stream tree in new builds") {
         f.checkbox(field: "embedInBuild")
     }
+
+    f.entry(field:"cacheBuild", title:"Cache build downstream triggers on build completion") {
+        f.checkbox(field: "cacheBuild")
+    }
 }

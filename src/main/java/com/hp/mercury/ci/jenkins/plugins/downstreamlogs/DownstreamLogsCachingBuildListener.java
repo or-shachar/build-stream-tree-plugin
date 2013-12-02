@@ -16,14 +16,16 @@ import java.io.PrintStream;
  * To change this template use File | Settings | File Templates.
  */
 //we want to run last, to make sure the log is complete before we exeecute...
-@Extension(ordinal = Integer.MIN_VALUE)
+@Extension(ordinal = Integer.MIN_VALUE + 10)
 public class DownstreamLogsCachingBuildListener extends RunListener<Run> {
 
     @Override
     public void onFinalized(Run run) {
         super.onFinalized(run);
 
-        if (DownstreamLogsAction.getDescriptorStatically().getCacheBuilds()) {
+        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty)run.getParent().getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
+        boolean overridingEmbed = (property != null) && (property.getOverrideGlobalConfig()) && (property.getCacheBuild());
+        if (DownstreamLogsAction.getDescriptorStatically().getCacheBuilds() || (overridingEmbed)) {
             Log.debug("Starting caching downstream builds for " + run.getFullDisplayName());
             DownstreamLogsUtils.getDownstreamRuns(run);
             Log.debug("Done caching downstream builds for " + run.getFullDisplayName());
