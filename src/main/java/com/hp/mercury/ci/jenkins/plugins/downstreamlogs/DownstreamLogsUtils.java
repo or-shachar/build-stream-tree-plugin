@@ -95,7 +95,10 @@ public class DownstreamLogsUtils {
 
     public static Collection<BuildStreamTreeEntry> getDownstreamRuns(Run run) {
 
-        return (DownstreamLogsAction.getDescriptorStatically().getCacheBuilds()) ?
+        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty)run.getParent().getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
+        boolean overridingEmbed = (property != null) && (property.getOverrideGlobalConfig()) && (property.getCacheBuild());
+
+        return (DownstreamLogsAction.getDescriptorStatically().getCacheBuilds() || (overridingEmbed)) ?
              retrieveFromCache(run) :
              calculateDownstreamBuilds(run);
     }
