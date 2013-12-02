@@ -14,14 +14,16 @@ import jenkins.model.Jenkins;
  */
 public abstract class BuildStreamTreeEntry {
 
+    @Deprecated
+    transient private String path;
+    @Deprecated
+    transient private String template;
+
     public static class BuildEntry extends BuildStreamTreeEntry {
 
         transient Run run;
         private final String jobName;
         private final int buildNumber;
-
-        @Deprecated
-        transient private String path;
 
         public Run getRun() {
             if (run == null) {
