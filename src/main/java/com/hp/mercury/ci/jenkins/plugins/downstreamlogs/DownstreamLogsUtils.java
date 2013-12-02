@@ -203,9 +203,6 @@ public class DownstreamLogsUtils {
         return false;
     }
 
-
-
-
     private static class BuildExecutionByProjectCounter {
 
         Map<String,Integer> perBuildProjectExecutionMap = new HashMap<String, Integer>();
@@ -247,20 +244,32 @@ public class DownstreamLogsUtils {
                     buildExecutionByProject.getProjectExecutionsSetFromUpstreamBuild(
                             buildToReference, referencingProject);
 
-            final RunList reversedRunList = referencingProject.getBuilds().byTimestamp(
-                    buildToReference.getTimeInMillis(),
-                    System.currentTimeMillis());
+            /**
+             * THIS IMPLEMENTATION IS REALLY BAD MEMORY PERFORMANCE WISE. IT LOOKS LIKE getBuilds() does
+             * _getRuns.values() and that really looks like it's loading ALL OF PAST BUILDS into memory...
+             */
 
-            //runlist should be treated as iterable and not as list according to jenkins docs
-            final Stack<Run> runList = new Stack();
-            final Iterator<Run> reversedIterator = reversedRunList.iterator();
-            while (reversedIterator.hasNext()) {
-                runList.push(reversedIterator.next());
-            }
+//            final RunList reversedRunList = referencingProject.getBuilds().byTimestamp(
+//                    buildToReference.getTimeInMillis(),
+//                    System.currentTimeMillis());
+//
+//            //runlist should be treated as iterable and not as list according to jenkins docs
+//            final Stack<Run> runList = new Stack();
+//            final Iterator<Run> reversedIterator = reversedRunList.iterator();
+//            while (reversedIterator.hasNext()) {
+//                runList.push(reversedIterator.next());
+//            }
+//
+//            while (!runList.isEmpty()) {
 
-            while (!runList.isEmpty()) {
+            long cutoffTime = buildToReference.getStartTimeInMillis();
 
-                Run referencingBuild = runList.pop();
+            //true, it makes more sense to check the other way round starting from the earliest possible and continuing onwards.
+            //the jenkins API for this however seems to have horrible memory implications. see above comment.
+            for (Run referencingBuild = referencingProject.getLastBuild() ;
+                    referencingBuild.getStartTimeInMillis() >= cutoffTime ;
+                    referencingBuild = referencingBuild.getPreviousBuild()) {
+
                 Log.debug ("checking if " + referencingBuild  + " was started by " + buildToReference);
 
                 for (Cause.UpstreamCause upstreamCause : getUpstreamCauses(referencingBuild)) {
