@@ -4,6 +4,7 @@ import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.Column;
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.StringProvider;
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.Table;
 import hudson.Extension;
+import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -56,8 +57,8 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
             run = build;
         }
 
-        DownstreamLogsManualEmebedViaJobProperty property =
-                ((DownstreamLogsManualEmebedViaJobProperty)(run.getParent().getProperty(DownstreamLogsManualEmebedViaJobProperty.class)));
+        final Job parent = run instanceof MatrixRun ? ((MatrixRun) run).getParentBuild().getParent() : run.getParent();
+        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty) parent.getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
 
         final boolean embed = (property != null && property.getOverrideGlobalConfig()) ?
                 property.getEmbedInBuild() :
