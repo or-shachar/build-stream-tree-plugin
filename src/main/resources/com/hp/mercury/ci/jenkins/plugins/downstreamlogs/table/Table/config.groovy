@@ -29,8 +29,8 @@ f.advanced() {
         f.dropdownDescriptorSelector(field: "rowFilter")
     }
 
-    f.entry(title: "Table Columns", field:"columns") {
-        f.repeatableProperty(field:"columns", header:"Column", add:"Add Column")
+    f.entry(title: "Table Columns", field:"columnExtenders") {
+        f.repeatableProperty(field:"columnExtenders", header:"Column", add:"Add Column")
     }
 }
 f.entry {

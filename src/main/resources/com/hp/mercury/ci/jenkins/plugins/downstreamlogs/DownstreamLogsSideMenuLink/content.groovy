@@ -18,7 +18,7 @@ def void render(buildEntry) {
 l.tr() {
     cols.eachWithIndex { col, i ->
 
-        def column = tableConf.columns[i]
+        def column = tableConf.columnExtenders[i].column
         def display = true
         try {
             display = column.buildEntryFilter.display(buildEntry)
@@ -173,9 +173,9 @@ def renderTree() {
         l.table(id:"$Table.TABLE_HTML_ID", style:"margin-top:0px; border-top: none;", class:"pane bigtable sortable") {
 
             l.tr() {
-                tableConf.columns.each { col ->
+                tableConf.columnExtenders.each { colExt ->
                     l.th() {
-                        l.raw(col.header)
+                        l.raw(colExt.column.header)
                     }
                 }
             }
@@ -186,8 +186,8 @@ def renderTree() {
         }
 
         if (!emailMode) {
-            tableConf.columns.each { col ->
-                def colJs = col?.js.toString()
+            tableConf.columnExtenders.each { colExt ->
+                def colJs = colExt.column?.js.toString()
                 if (colJs != null && !colJs.isEmpty()) {
                     l.script() {
                         l.raw(colJs)
@@ -439,8 +439,8 @@ def renderTreeForBuild(build) {
     forest = calculateForest(build);
 
     //columns may need access to the forest
-    cols = tableConf.columns.collect { col ->
-        col.getColumnRendererFactory()?.newInstance(init)
+    cols = tableConf.columnExtenders.collect { colExt ->
+        colExt.column.getColumnRendererFactory()?.newInstance(init)
     }
 
     renderTree()

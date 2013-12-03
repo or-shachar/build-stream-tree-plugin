@@ -7,7 +7,11 @@ import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.behavior.GroovyCla
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -116,7 +120,48 @@ public class Column extends AbstractDescribableImpl<Column> {
 
         @Override
         public String getDisplayName() {
-            return "Column";
+            return "Rendered Column";
         }
     }
+
+    public static List<? extends Descriptor<? extends Column>> all() {
+        return Jenkins.getInstance().<Column, DescriptorImpl>getDescriptorList(Column.class);
+    }
+
+    @SuppressWarnings("unused")
+    public static class CombinedColumn extends Column {
+
+        private Collection<StringWrapper> combinedColumns;
+
+        @DataBoundConstructor
+        public CombinedColumn(
+                String header,
+                StringProvider js,
+                StringProvider filter,
+                Collection<StringWrapper> combinedColumns) {
+            super(header,
+                    //yes we could share the instance as a singleton, but as a hack we use the specific different instance to find the column instance from within the CombinedColumnRenderer
+                    new StringProvider.DefaultStringProvider("CombinedColumnRenderer.groovy")
+                    , js, filter);
+            this.combinedColumns = combinedColumns;
+        }
+
+        public Collection<StringWrapper> getCombinedColumns() {
+            return combinedColumns;
+        }
+
+        public void setCombinedColumns(Collection<StringWrapper> combinedColumns) {
+            this.combinedColumns = combinedColumns;
+        }
+
+        @Extension
+        public static class CombinedColumnDescriptorImpl extends DescriptorImpl {
+            @Override
+            public String getDisplayName() {
+                return "Combined Column";
+            }
+        }
+    }
+
+
 }

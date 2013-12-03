@@ -9,6 +9,8 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,7 +25,13 @@ public class Table extends AbstractDescribableImpl<Table> {
     public static final String TABLE_HTML_ID = "build-stream-tree-table";
 
     private String name;
+
+    //deprecated due to support for extensible columns
+    @Deprecated
     private List<Column> columns;
+
+    private List<ColumnExtender> columnExtenders;
+
     private StringProvider css;
     private StringProvider js;
     private StringProvider rowFilter;
@@ -36,7 +44,7 @@ public class Table extends AbstractDescribableImpl<Table> {
 
     @DataBoundConstructor
     public Table(String name,
-                 List<Column> columns,
+                 List<ColumnExtender> columnExtenders,
                  StringProvider css,
                  StringProvider js,
                  StringProvider groovyInit,
@@ -44,12 +52,37 @@ public class Table extends AbstractDescribableImpl<Table> {
                  StringProvider rowFilter) {
 
         this.name = name;
-        this.columns = columns;
         this.css = css;
         this.js = js;
         this.groovyInit = groovyInit;
         this.rowFilter = rowFilter;
         this.additionalTopLayout = additionalTopLayout;
+        this.columnExtenders = columnExtenders;
+    }
+
+    /**
+     * backwards compatability - used by java deserialization
+     *
+     * if this is old instance, we'll have columns and not column extenders, and this converts them.
+     */
+    @SuppressWarnings("unused")
+    private Object readResolve() {
+        if (this.columnExtenders == null) {
+            this.columnExtenders = new ArrayList<ColumnExtender>(this.columns.size());
+            for (Column c : this.columns) {
+                this.columnExtenders.add(new ColumnExtender(c));
+            }
+        }
+        this.columns = Collections.emptyList();
+        return this;
+    }
+
+    public List<ColumnExtender> getColumnExtenders() {
+        return columnExtenders;
+    }
+
+    public void setColumnExtenders(List<ColumnExtender> columnExtenders) {
+        this.columnExtenders = columnExtenders;
     }
 
     public GroovyClassFactory<BuildEntryFilter> getRowFilterFactory() {
@@ -117,10 +150,12 @@ public class Table extends AbstractDescribableImpl<Table> {
         this.name = name;
     }
 
+    @Deprecated
     public List<Column> getColumns() {
         return columns;
     }
 
+    @Deprecated
     public void setColumns(List<Column> columns) {
         this.columns = columns;
     }

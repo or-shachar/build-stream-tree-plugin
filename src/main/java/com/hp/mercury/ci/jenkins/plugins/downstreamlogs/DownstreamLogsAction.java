@@ -1,6 +1,7 @@
 package com.hp.mercury.ci.jenkins.plugins.downstreamlogs;
 
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.Column;
+import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.ColumnExtender;
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.StringProvider;
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.Table;
 import hudson.Extension;
@@ -262,24 +263,24 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
                     "Default",
                     Arrays.asList(
 
-                            new Column(
+                            new ColumnExtender(new Column(
                                     "+/-",
                                     new StringProvider.DefaultStringProvider("SubtreeCollapserColumnRenderer.groovy"),
                                     new StringProvider.DefaultStringProvider("SubtreeCollapserColumnRenderer.js"),
-                                    new StringProvider.NoneStringProvider()),
+                                    new StringProvider.NoneStringProvider())),
 
-                            createDefaultColumnConfig("#",          "RowCounterColumnRenderer"),
-                            createDefaultColumnConfig("Status",     "BallStatusColumnRenderer"),
-                            createDefaultColumnConfig("Problems",   "FailingLeavesColumnRenderer"),
-                            createDefaultColumnConfig("Tree",       "TreeColumnRenderer"),
-                            createDefaultColumnConfig("Console",    "ConsoleLinksColumnRenderer"),
-                            createDefaultColumnConfig("Tests",      "TestResultsLinksColumnRenderer"),
-                            createDefaultColumnConfig("Summary",    "SummaryColumnRenderer"),
-                            createDefaultColumnConfig("ETA",        "ETAColumnRenderer"),
-                            createDefaultColumnConfig("Badges",     "BuildBadgesColumnRenderer"),
-                            createDefaultColumnConfig("Duration",   "DurationColumnRenderer"),
-                            createDefaultColumnConfig("Success",    "LastSuccessColumnRenderer"),
-                            createDefaultColumnConfig("Started",    "StartedOnColumnRenderer")
+                            new ColumnExtender(createDefaultColumnConfig("#",          "RowCounterColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Status",     "BallStatusColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Problems",   "FailingLeavesColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Tree",       "TreeColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Console",    "ConsoleLinksColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Tests",      "TestResultsLinksColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Summary",    "SummaryColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("ETA",        "ETAColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Badges",     "BuildBadgesColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Duration",   "DurationColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Success",    "LastSuccessColumnRenderer")),
+                            new ColumnExtender(createDefaultColumnConfig("Started",    "StartedOnColumnRenderer"))
                     ),
 
 
