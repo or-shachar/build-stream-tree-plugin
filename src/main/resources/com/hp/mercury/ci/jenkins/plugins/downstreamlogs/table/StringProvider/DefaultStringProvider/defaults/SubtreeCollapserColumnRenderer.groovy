@@ -37,34 +37,45 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
         return recGetNestingString(node)
     }
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+
+        rowCounter--
+
+        if ((entry instanceof BuildStreamTreeEntry.BuildEntry) || (entry instanceof BuildStreamTreeEntry.JobEntry)) {
+            return [data: entry.run.timestamp.getTimeInMillis(), prefix:getNestingString(entry), jobName: entry.jobName]
+        }
+
+        else if (entry instanceof BuildStreamTreeEntry.StringEntry) {
+            return [data:rowCounter, prefix:getNestingString(stringEntry), jobName: stringEntry.string]
+        }
+
+        return [] as Map;
+    }
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-        rowCounter--
+
 
         boolean isLeaf = this.content.findTreeNodeForBuildEntry(buildEntry).children.isEmpty()
 
-        l.td(data:rowCounter, prefix:getNestingString(buildEntry), jobName: buildEntry.jobName) {
-            if (isLeaf) {
-                l.text(" ")
-            }
-            else {
-                l.div(expanded:"true", onClick: "expandCollapse(this)") {
-                    l.img(src: "${Jenkins.instance.rootUrl}plugin/downstream-logs/images/16x16/minus.gif")
-                }
-            }
-
+        if (isLeaf) {
+            l.text(" ")
         }
+        else {
+            l.div(expanded:"true", onClick: "expandCollapse(this)") {
+                l.img(src: "${Jenkins.instance.rootUrl}plugin/downstream-logs/images/16x16/minus.gif")
+            }
+        }
+
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        rowCounter--
-        l.td(data:rowCounter, prefix:getNestingString(jobEntry), jobName: jobEntry.jobName) { l.text(" ") }
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        rowCounter--
-        l.td(data:rowCounter, prefix:getNestingString(stringEntry), jobName: stringEntry.string) { l.text(" ") }
+        l.text(" ")
     }
 }
