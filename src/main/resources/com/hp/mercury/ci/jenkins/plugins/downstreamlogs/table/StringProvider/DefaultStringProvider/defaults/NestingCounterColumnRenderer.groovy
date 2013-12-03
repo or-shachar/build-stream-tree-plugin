@@ -22,6 +22,11 @@ public class NestingCounterColumnRenderer implements ColumnRenderer {
     //additional data for sorting
     def rowCounter = 0
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        return [data: rowCounter--]
+    }
+
+
     def recGetNestingString(node) {
         if (node == null) {
             return ""
@@ -38,19 +43,16 @@ public class NestingCounterColumnRenderer implements ColumnRenderer {
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-        rowCounter--
-        l.td(data:rowCounter) {l.text(getNestingString(buildEntry))}
+        l.text(getNestingString(buildEntry))
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        rowCounter--
-        l.td(data:rowCounter) {l.text(getNestingString(jobEntry))}
+        l.text(getNestingString(jobEntry))
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        rowCounter--
-        l.td(data:rowCounter) {l.text(getNestingString(stringEntry))}
+        l.text(getNestingString(stringEntry))
     }
 }

@@ -13,20 +13,27 @@ import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.behavior.ColumnRen
  */
 class StartedOnColumnRenderer implements ColumnRenderer {
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+            return [data: entry.run.timestamp.getTimeInMillis()]
+        }
+
+        return [] as Map;
+    }
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-        l.td(data:buildEntry.run.timestamp.getTimeInMillis()) {
-            l.text(buildEntry.run.getTimestampString() + " ago")
-        }
+        l.text(buildEntry.run.getTimestampString() + " ago")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td() {l.text(" ")}
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td() {l.text(" ")}
+        l.text(" ")
     }
 }

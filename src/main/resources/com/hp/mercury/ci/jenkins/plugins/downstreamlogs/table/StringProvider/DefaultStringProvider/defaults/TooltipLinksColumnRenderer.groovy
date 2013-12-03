@@ -14,37 +14,48 @@ import jenkins.model.Jenkins
  */
 class TooltipLinksColumnRenderer implements ColumnRenderer {
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        switch (entry) {
+            case BuildStreamTreeEntry.BuildEntry:
+                return [data: 2]
+                break
+            case BuildStreamTreeEntry.JobEntry:
+                return [data: 1]
+                break
+            case BuildStreamTreeEntry.StringEntry:
+                return [data: 0]
+                break
+        }
+    }
+
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
         def projectUrl = "$Jenkins.instance.rootUrl$buildEntry.run.parent.url"
         def buildUrl = "$projectUrl/$buildEntry.run.number"
 
-        l.td(data: "2") {
-            l.a(href: projectUrl, class: " model-link tl-tr ") {
-                l.text("JOB")
-            }
+        l.a(href: projectUrl, class: " model-link tl-tr ") {
+            l.text("JOB")
+        }
 
-            l.raw(" ")
+        l.raw(" ")
 
-            l.a(href: buildUrl, class: " model-link tl-tr ") {
-                l.text("BUILD")
-            }
+        l.a(href: buildUrl, class: " model-link tl-tr ") {
+            l.text("BUILD")
         }
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
         def projectUrl = "$Jenkins.instance.rootUrl$jobEntry.job.url"
-        l.td(data: "1") {
-            l.a(href: projectUrl, class: " model-link tl-tr ") {
-                l.text("JOB")
-            }
+        l.a(href: projectUrl, class: " model-link tl-tr ") {
+            l.text("JOB")
         }
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td(data: "0") { l.text(" ")}
+        l.text(" ")
     }
 }

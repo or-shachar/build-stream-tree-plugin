@@ -13,24 +13,27 @@ import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.behavior.ColumnRen
  */
 class SummaryColumnRenderer implements ColumnRenderer {
 
-    def counter = 0
+
+
+    //additional data for sorting
+    def rowCounter = 0
+
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        return [data: rowCounter--]
+    }
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-        counter--
-        l.td(data:counter) {
-            l.raw(buildEntry.run.buildStatusSummary.message)
-        }
+        l.raw(buildEntry.run.buildStatusSummary.message)
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        counter--
-        l.td(data:counter) {l.text(" ")}
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        counter--
-        l.td(data:counter) {l.text(" ")}
+        l.text(" ")
     }
 }

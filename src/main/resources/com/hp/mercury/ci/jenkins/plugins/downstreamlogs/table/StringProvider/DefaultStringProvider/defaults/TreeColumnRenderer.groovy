@@ -44,6 +44,17 @@ public class TreeColumnRenderer implements ColumnRenderer {
 
     def depthFinished = new HashMap<Integer,Boolean>()
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        def treeNode = this.content.findTreeNodeForBuildEntry(entry)
+        def d = treeNode.depth
+
+        --rowCounter
+
+        return [style:"margin-left:${d*40}px",
+                data: rowCounter]
+    }
+
+
     /**
      *
      * @param l xml helper
@@ -62,33 +73,28 @@ public class TreeColumnRenderer implements ColumnRenderer {
                 this.content.content.forest.size() :
                 treeNode.parent.children.size()) - treeNode.index - 1
 
-        --rowCounter
-
-        l.td(data: rowCounter) {
-
-            if (o instanceof BuildStreamTreeEntry.BuildEntry && o.run.equals(this.content.content.my.build)) {
-                addArrow(l)
-            }
-            else {
-                addEmpty(l)
-            }
-
-            for (def i = 0 ; i < d-1 ; i++) {
-                depthFinished[i+1] ? addEmpty(l) : addLine(l)
-            }
-
-            if (r == 0) {
-                addLast(l)
-            }
-
-            else {
-                addNew(l)
-            }
-
-            depthFinished[d] = (r == 0)
-
-            f()
+        if (o instanceof BuildStreamTreeEntry.BuildEntry && o.run.equals(this.content.content.my.build)) {
+            addArrow(l)
         }
+        else {
+            addEmpty(l)
+        }
+
+        for (def i = 0 ; i < d-1 ; i++) {
+            depthFinished[i+1] ? addEmpty(l) : addLine(l)
+        }
+
+        if (r == 0) {
+            addLast(l)
+        }
+
+        else {
+            addNew(l)
+        }
+
+        depthFinished[d] = (r == 0)
+
+        f()
     }
 
     @Override

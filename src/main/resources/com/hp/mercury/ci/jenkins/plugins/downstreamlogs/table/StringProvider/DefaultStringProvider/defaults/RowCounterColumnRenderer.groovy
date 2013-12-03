@@ -17,16 +17,16 @@ public class RowCounterColumnRenderer implements ColumnRenderer {
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-        l.td{l.text(++rowCount);}
+        l.text(++rowCount);
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td{l.text(++rowCount);}
+        l.text(++rowCount);
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td{l.text(++rowCount);}
+        l.text(++rowCount);
     }
 }
