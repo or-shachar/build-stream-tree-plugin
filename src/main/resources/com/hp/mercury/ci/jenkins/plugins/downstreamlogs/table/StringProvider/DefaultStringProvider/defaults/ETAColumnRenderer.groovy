@@ -27,7 +27,7 @@ class ETAColumnRenderer implements ColumnRenderer {
             }
         }
 
-        return [] as Map;
+        return Collections.emptyMap()
     }
 
     @Override

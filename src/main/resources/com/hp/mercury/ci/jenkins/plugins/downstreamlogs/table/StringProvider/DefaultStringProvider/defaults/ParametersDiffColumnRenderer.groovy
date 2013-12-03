@@ -75,10 +75,7 @@ public class ParametersDiffColumnRenderer implements ColumnRenderer {
         }
     }
 
-    def renderParamDiff(l,
-                        List<ParametersAction> currentParameters,
-                        List<ParametersAction> parentParameters) {
-
+    def calculateChanges(List<ParametersAction> currentParameters, List<ParametersAction> parentParameters) {
         def parentParametersMap = toMap(parentParameters)
         def currentParametersMap = toMap(currentParameters)
 
@@ -102,32 +99,27 @@ public class ParametersDiffColumnRenderer implements ColumnRenderer {
                 [parentValue, value]
         }
 
-        def newParamsEmpty = newParameters.isEmpty()
-        def removedParamsEmpty = removedParameters.isEmpty()
-        def modifiedParamsEmpty = modifiedParameters.isEmpty()
+        return [newParameters, removedParameters, modifiedParameters];
+    }
 
-        def isChanged = !newParamsEmpty || !removedParamsEmpty || !modifiedParamsEmpty
+    def renderParamDiff(l,
+                        List<ParametersAction> currentParameters,
+                        List<ParametersAction> parentParameters) {
 
-        def tdAttributes = [data: counter--]
-        if (isChanged) {
-            tdAttributes.put("tooltip", renderContent(l, newParameters, removedParameters, modifiedParameters))
-            tdAttributes.put("nodismiss", "")
+        def (newParameters, removedParameters, modifiedParameters) = calculateChanges(currentParameters, parentParameters);
+
+        l.raw(" ")
+
+        if (!newParameters.isEmpty()) {
+            addImage(l,"svn_added.png")
         }
 
-        l.td(tdAttributes) {
-            l.raw(" ")
+        if (!removedParameters.isEmpty()) {
+            addImage(l,"svn_deleted.png")
+        }
 
-            if (!newParamsEmpty) {
-                addImage(l,"svn_added.png")
-            }
-
-            if (!removedParamsEmpty) {
-                addImage(l,"svn_deleted.png")
-            }
-
-            if (!modifiedParamsEmpty) {
-                addImage(l,"svn_modified.png")
-            }
+        if (!modifiedParameters.isEmpty()) {
+            addImage(l,"svn_modified.png")
         }
     }
 
@@ -188,24 +180,58 @@ public class ParametersDiffColumnRenderer implements ColumnRenderer {
         }
     }
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        counter--
+
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+            def (currentParameters, parentParameters) = calculateParameters(entry)
+            def (newParameters, removedParameters, modifiedParameters) = calculateChanges(currentParameters, parentParameters);
+
+            def isChanged = !newParameters.isEmpty() || !removedParameters.isEmpty() || !modifiedParameters.isEmpty()
+
+            def tdAttributes = [data: counter--]
+            if (isChanged) {
+                tdAttributes.put("tooltip", renderContent(l, newParameters, removedParameters, modifiedParameters))
+                tdAttributes.put("nodismiss", "")
+            }
+
+            return tdAttributes
+        }
+
+        else  {
+            return [data: counter--]
+        }
+
+    }
+
+    def calculateParameters(buildEntry) {
+
+        def currentParameters = buildEntry.run.getActions(ParametersAction.class)
+
+        def parentBuildEntry = this.init.findTreeNodeForBuildEntry(buildEntry).parent?.value
+        def parentParameters = parentBuildEntry instanceof BuildStreamTreeEntry.BuildEntry ?
+            parentBuildEntry.run?.getActions(ParametersAction.class):
+            null
+
+        return [currentParameters, parentParameters]
+    }
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
-        def parentBuildEntry = this.init.findTreeNodeForBuildEntry(buildEntry).parent?.value
+        def (currentParameters, parentParameters) = calculateParameters(buildEntry)
         renderParamDiff(l,
-                buildEntry.run.getActions(ParametersAction.class),
-                parentBuildEntry instanceof BuildStreamTreeEntry.BuildEntry ?
-                    parentBuildEntry.run?.getActions(ParametersAction.class):
-                    null)
+                currentParameters,
+                parentParameters)
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td(data: counter--) {l.text(" ")}
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td(data: counter--) {l.text(" ")}
+        l.text(" ")
     }
 }

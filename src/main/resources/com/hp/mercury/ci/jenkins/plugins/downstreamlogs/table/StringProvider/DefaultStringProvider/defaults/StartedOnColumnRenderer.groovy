@@ -19,7 +19,7 @@ class StartedOnColumnRenderer implements ColumnRenderer {
             return [data: entry.run.timestamp.getTimeInMillis()]
         }
 
-        return [] as Map;
+        return Collections.emptyMap();
     }
 
     @Override

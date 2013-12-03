@@ -46,15 +46,14 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
         }
 
         else if (entry instanceof BuildStreamTreeEntry.StringEntry) {
-            return [data:rowCounter, prefix:getNestingString(stringEntry), jobName: stringEntry.string]
+            return [data:rowCounter, prefix:getNestingString(entry), jobName: entry.string]
         }
 
-        return [] as Map;
+        return Collections.emptyMap();
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-
 
         boolean isLeaf = this.content.findTreeNodeForBuildEntry(buildEntry).children.isEmpty()
 

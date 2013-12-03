@@ -34,7 +34,7 @@ l.tr() {
         try {
             if (display) {
                 def cellMetadata = col.metaClass.respondsTo(col, "cellMetadata", BuildStreamTreeEntry) ?
-                    col.cellMetadata(buildEntry) : {};
+                    col.cellMetadata(buildEntry) : Collections.emptyMap();
                 l.td(cellMetadata) {
                     col.render(l, buildEntry)
                 }

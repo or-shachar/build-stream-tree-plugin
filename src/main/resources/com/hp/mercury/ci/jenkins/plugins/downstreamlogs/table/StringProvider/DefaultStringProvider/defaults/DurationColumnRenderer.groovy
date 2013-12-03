@@ -15,13 +15,13 @@ class DurationColumnRenderer implements ColumnRenderer {
 
     Map cellMetadata(BuildStreamTreeEntry entry) {
         if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
-            def duration = buildEntry.run.isBuilding() ?
-                (System.currentTimeMillis() - buildEntry.run.getTimeInMillis()) :
-                buildEntry.run.duration
+            def duration = entry.run.isBuilding() ?
+                (System.currentTimeMillis() - entry.run.getTimeInMillis()) :
+                entry.run.duration
             return [data: duration]
         }
 
-        return [] as Map;
+        return Collections.emptyMap();
     }
 
 
