@@ -36,7 +36,7 @@ public class CombinedColumnRenderer implements ColumnRenderer {
             for (colRenderer in cols) {
 
                 if (colRenderer.is(this)) {
-                    this.currentHeader = init.tableConf.columnExtenders[i].column.header
+                    this.currentHeader = init.content.tableConf.columnExtenders[i].column.header
                     break
                 }
 
@@ -50,36 +50,50 @@ public class CombinedColumnRenderer implements ColumnRenderer {
         }
     }
 
-    def traversedNames = new HashSet<String>()
+    def traversedNames = new HashSet()
 
-    def findCurrentColumnName() {
-
-    }
-
-    def recursiveEntry(l, entry, currentColumnName) {
+    def renderEntry(l, entry) {
 
         //can't do this in constructor, init.content.cols collection doesn't exist yet...
         initialize()
 
-        //avoid infinite cycles.
-        if (!traversedNames.contains(currentColumnName)) {
-            traversedNames.add(currentColumnName)
+        //assign NOP
+        //TODO: almost have it, need to use a proxy of l instead with td being NOOP instead
+        //TODO: also need to change logic a bit so that combined Columns don't have to be visible in table...
+        l.td {
+            l.metaClass.td = {  }
+            def (_, extender) = this.colsMap[this.currentHeader]
+            extender.combinedColumns.each { colHeader ->
+                def (subColumnRenderer, __) = this.colsMap[colHeader.toString()]
+                subColumnRenderer.render(l, entry);
+            }
         }
+        l.metaClass.td = null;//{throw new MissingMethodException()}
     }
+
+//    def recursiveRenderEntry(l, entry, headerOfColumnToRender) {
+//
+//        //avoid infinite cycles.
+////        if (!traversedNames.contains(entry)) {
+////            traversedNames.add(entry)
+////        }
+//
+//
+//    }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
-        recursiveRender(l, buildEntry, findCurrentColumnName())
+        renderEntry(l, buildEntry)
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        recursiveRender(l, jobEntry, findCurrentColumnName())
+        renderEntry(l, jobEntry)
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        recursiveRender(l, stringEntry, findCurrentColumnName())
+        renderEntry(l, stringEntry)
     }
 
 }
