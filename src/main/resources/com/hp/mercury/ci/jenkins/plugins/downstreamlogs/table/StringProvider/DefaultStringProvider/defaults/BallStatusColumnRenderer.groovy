@@ -16,29 +16,37 @@ import jenkins.model.Jenkins
  */
 class BallStatusColumnRenderer implements ColumnRenderer {
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        switch (entry) {
+            case BuildStreamTreeEntry.BuildEntry:
+                return [data: entry.run.iconColor.image]
+                break
+            case BuildStreamTreeEntry.JobEntry:
+                return [data: BallColor.GREY.image]
+                break
+            case BuildStreamTreeEntry.StringEntry:
+                return [data: BallColor.GREY.image]
+                break
+        }
+    }
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
         //sort by image name
         def image = buildEntry.run.iconColor.image
-        l.td(data: image) {
-            l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/$image")
-        }
+        l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/$image")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
 
         def image = BallColor.GREY.image
-        l.td(data: image) {
-            l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/${image}")
-        }
+        l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/${image}")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
         def image = BallColor.GREY.image
-        l.td(data: image) {
-            l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/${image}")
-        }
+        l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/${image}")
     }
 }

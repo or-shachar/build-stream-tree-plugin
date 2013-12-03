@@ -34,6 +34,16 @@ public class EmailTreeColumnRenderer implements ColumnRenderer {
         addConnector(l, "me.png")
     }
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        def treeNode = this.content.findTreeNodeForBuildEntry(entry)
+        def d = treeNode.depth
+
+        --rowCounter
+
+        return [style:"margin-left:${d*40}px",
+            data: rowCounter]
+    }
+
     /**
      *
      * @param l xml helper
@@ -45,22 +55,14 @@ public class EmailTreeColumnRenderer implements ColumnRenderer {
      */
     def render(l,o,f) {
 
-        def treeNode = this.content.findTreeNodeForBuildEntry(o)
-        def d = treeNode.depth
-
-        --rowCounter
-
-        l.td(style:"margin-left:${d*40}px", data: rowCounter) {
-
-            if (o instanceof BuildStreamTreeEntry.BuildEntry && o.run.equals(this.content.content.my.build)) {
-                me(l)
-            }
-            else {
-                space(l)
-            }
-
-            f()
+        if (o instanceof BuildStreamTreeEntry.BuildEntry && o.run.equals(this.content.content.my.build)) {
+            me(l)
         }
+        else {
+            space(l)
+        }
+
+        f()
     }
 
     @Override

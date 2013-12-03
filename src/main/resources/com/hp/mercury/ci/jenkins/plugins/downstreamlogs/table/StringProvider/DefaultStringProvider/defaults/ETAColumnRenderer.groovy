@@ -14,6 +14,22 @@ import hudson.Util
  */
 class ETAColumnRenderer implements ColumnRenderer {
 
+
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+            def run = entry.run
+
+            if (run.isBuilding()) {
+                def estimated = run.getEstimatedDuration()
+                def duration = System.currentTimeMillis() - run.getTimeInMillis()
+                def eta = estimated - duration
+                return [data:eta]
+            }
+        }
+
+        return [] as Map;
+    }
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
@@ -23,25 +39,22 @@ class ETAColumnRenderer implements ColumnRenderer {
             def estimated = run.getEstimatedDuration()
             def duration = System.currentTimeMillis() - run.getTimeInMillis()
             def eta = estimated - duration
-            l.td(data:eta) {
-                l.raw("${Util.getTimeSpanString(Math.abs(eta))} ${eta < 0 ? " overdue" : ""}")
-            }
+
+            l.raw("${Util.getTimeSpanString(Math.abs(eta))} ${eta < 0 ? " overdue" : ""}")
         }
         else {
-            l.td() {
 
-                l.text(" ")
-            }
+            l.text(" ")
         }
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td() { l.text(" ") }
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td() { l.text(" ") }
+        l.text(" ")
     }
 }

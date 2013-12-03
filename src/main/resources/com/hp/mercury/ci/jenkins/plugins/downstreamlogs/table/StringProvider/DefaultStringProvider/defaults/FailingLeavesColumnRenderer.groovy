@@ -53,6 +53,16 @@ public class FailingLeavesColumnRenderer implements ColumnRenderer {
 
     }
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+
+            return [data:entry.run.result.ordinal]
+        }
+
+        return [] as Map;
+    }
+
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
@@ -62,24 +72,22 @@ public class FailingLeavesColumnRenderer implements ColumnRenderer {
 
             def image = run.iconColor.image
 
-            l.td(data: run.result.ordinal) {
-                l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/$image")
-            }
+            l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/$image")
         }
 
         else {
 
-            l.td() {l.text(" ")}
+            l.text(" ")
         }
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td() {l.text(" ")}
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td() {l.text(" ")}
+        l.text(" ")
     }
 }

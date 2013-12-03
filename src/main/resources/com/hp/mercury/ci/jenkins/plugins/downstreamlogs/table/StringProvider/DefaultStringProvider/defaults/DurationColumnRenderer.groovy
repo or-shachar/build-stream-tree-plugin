@@ -13,25 +13,31 @@ import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.behavior.ColumnRen
  */
 class DurationColumnRenderer implements ColumnRenderer {
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+            def duration = buildEntry.run.isBuilding() ?
+                (System.currentTimeMillis() - buildEntry.run.getTimeInMillis()) :
+                buildEntry.run.duration
+            return [data: duration]
+        }
+
+        return [] as Map;
+    }
+
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
-        def duration = buildEntry.run.isBuilding() ?
-            (System.currentTimeMillis() - buildEntry.run.getTimeInMillis()) :
-            buildEntry.run.duration
-
-        l.td(data:duration) {
-            l.text(buildEntry.run.getDurationString())
-        }
+        l.text(buildEntry.run.getDurationString())
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td() { l.text(" ") }
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td() { l.text(" ") }
+        l.text(" ")
     }
 }

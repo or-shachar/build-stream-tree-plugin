@@ -50,7 +50,7 @@ public class CombinedColumnRenderer implements ColumnRenderer {
         }
     }
 
-    def traversedNames = new HashSet()
+//    def traversedNames = new HashSet()
 
     def renderEntry(l, entry) {
 
@@ -60,15 +60,11 @@ public class CombinedColumnRenderer implements ColumnRenderer {
         //assign NOP
         //TODO: almost have it, need to use a proxy of l instead with td being NOOP instead
         //TODO: also need to change logic a bit so that combined Columns don't have to be visible in table...
-        l.td {
-            l.metaClass.td = {  }
             def (_, extender) = this.colsMap[this.currentHeader]
             extender.combinedColumns.each { colHeader ->
                 def (subColumnRenderer, __) = this.colsMap[colHeader.toString()]
                 subColumnRenderer.render(l, entry);
             }
-        }
-        l.metaClass.td = null;//{throw new MissingMethodException()}
     }
 
 //    def recursiveRenderEntry(l, entry, headerOfColumnToRender) {

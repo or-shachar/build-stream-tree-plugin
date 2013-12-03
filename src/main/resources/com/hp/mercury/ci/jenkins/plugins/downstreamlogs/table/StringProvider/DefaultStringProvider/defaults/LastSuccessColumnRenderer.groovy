@@ -14,13 +14,24 @@ import hudson.model.Run
  */
 class LastSuccessColumnRenderer implements ColumnRenderer {
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+            return [data: entry.run.parent.lastSuccessfulBuild.getTimeInMillis()]
+        }
+
+        else if (entry instanceof BuildStreamTreeEntry.JobEntry) {
+            return [data: entry.job.lastSuccessfulBuild.getTimeInMillis()]
+        }
+
+        return [] as Map;
+    }
+
     private void renderNullSafe(Run build, JenkinsLikeXmlHelper l) {
         if (build == null) {
-            l.td() { l.text("N/A") }
+            l.text("N/A")
         } else {
-            l.td(data: build.getTimeInMillis()) {
-                l.text(build.getTimestampString() + " ago")
-            }
+            l.text(build.getTimestampString() + " ago")
         }
     }
 
@@ -40,6 +51,6 @@ class LastSuccessColumnRenderer implements ColumnRenderer {
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td() {l.text(" ")}
+        l.text(" ")
     }
 }

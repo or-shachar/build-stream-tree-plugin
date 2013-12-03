@@ -33,7 +33,11 @@ l.tr() {
 
         try {
             if (display) {
-                col.render(l, buildEntry)
+                def cellMetadata = col.metaClass.respondsTo(col, "cellMetadata", BuildStreamTreeEntry) ?
+                    col.cellMetadata(buildEntry) : {};
+                l.td(cellMetadata) {
+                    col.render(l, buildEntry)
+                }
             }
             else {
                 l.td{l.text(" ")}

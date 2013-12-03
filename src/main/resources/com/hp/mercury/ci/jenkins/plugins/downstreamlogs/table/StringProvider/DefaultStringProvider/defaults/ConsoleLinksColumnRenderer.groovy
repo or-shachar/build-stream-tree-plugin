@@ -15,6 +15,21 @@ import jenkins.model.Jenkins
  */
 class ConsoleLinksColumnRenderer implements ColumnRenderer {
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+        switch (entry) {
+            case BuildStreamTreeEntry.BuildEntry:
+                return [data: 2]
+                break
+            case BuildStreamTreeEntry.JobEntry:
+                return [data: 1]
+                break
+            case BuildStreamTreeEntry.StringEntry:
+                return [data: 0]
+                break
+        }
+    }
+
+
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
@@ -22,22 +37,18 @@ class ConsoleLinksColumnRenderer implements ColumnRenderer {
         def buildUrl = "$projectUrl/$buildEntry.run.number"
         def consoleUrl = "$buildUrl/console"
 
-        l.td(data: "2") {
-            l.a(href: consoleUrl) {
-                l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/terminal.png")
-            }
+        l.a(href: consoleUrl) {
+            l.img(src:"$Jenkins.instance.rootUrl$Functions.resourcePath/images/24x24/terminal.png")
         }
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.JobEntry jobEntry) {
-        l.td(data: "1") {
-            l.text(" ")
-        }
+        l.text(" ")
     }
 
     @Override
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.StringEntry stringEntry) {
-        l.td(data: "0") { l.text(" ")}
+        l.text(" ")
     }
 }
