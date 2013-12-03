@@ -59,7 +59,7 @@ public class FailingLeavesColumnRenderer implements ColumnRenderer {
             return [data:entry.run.result.ordinal]
         }
 
-        return Collections.emptyMap();
+        return [data:Result.SUCCESS.ordinal];
     }
 
 

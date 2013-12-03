@@ -25,9 +25,12 @@ class ETAColumnRenderer implements ColumnRenderer {
                 def eta = estimated - duration
                 return [data:eta]
             }
+            else {
+                return [data:0]
+            }
         }
 
-        return Collections.emptyMap()
+        return [data:0]
     }
 
     @Override

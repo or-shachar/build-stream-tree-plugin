@@ -24,7 +24,7 @@ class LastSuccessColumnRenderer implements ColumnRenderer {
             return [data: entry.job.lastSuccessfulBuild.getTimeInMillis()]
         }
 
-        return Collections.emptyMap();
+        return [data:0];
     }
 
     private void renderNullSafe(Run build, JenkinsLikeXmlHelper l) {

@@ -46,9 +46,10 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
         }
 
         else if (entry instanceof BuildStreamTreeEntry.StringEntry) {
-            return [data:rowCounter, prefix:getNestingString(entry), jobName: entry.string]
+            return [data: rowCounter, prefix:getNestingString(entry), jobName: entry.string]
         }
 
+        //never reach here...
         return Collections.emptyMap();
     }
 
