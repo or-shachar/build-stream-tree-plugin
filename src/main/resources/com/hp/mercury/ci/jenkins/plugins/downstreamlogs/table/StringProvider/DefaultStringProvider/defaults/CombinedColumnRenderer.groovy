@@ -2,7 +2,7 @@ package com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.StringProvider.De
 
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.BuildStreamTreeEntry
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.JenkinsLikeXmlHelper
-import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.Column
+import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.Log
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.behavior.ColumnRenderer
 
 /**
@@ -15,14 +15,24 @@ import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.behavior.ColumnRen
 public class CombinedColumnRenderer implements ColumnRenderer {
 
     def init
-    def currentHeader
-    def colsMap
+    def column
     def initialized = false
+    def subColRenderers
 
     def CombinedColumnRenderer(init) {
 
         this.init = init;
+    }
 
+    Map cellMetadata(BuildStreamTreeEntry entry) {
+
+        initialize()
+
+        def col = this.subColRenderers[0]
+        def cellMetadata = col.metaClass.respondsTo(col, "cellMetadata", BuildStreamTreeEntry) ?
+            col.cellMetadata(entry) : Collections.emptyMap();
+
+        return cellMetadata
     }
 
     def initialize() {
@@ -30,27 +40,41 @@ public class CombinedColumnRenderer implements ColumnRenderer {
 
             initialized = true;
 
+            //all of this code just finds the column this renderer belongs to so that we can check its subcolumns.
+            //TODO refactor, support infra to pass the column instance in the constructor optionally?
+
+            //the assumption here is that the order of the rendereers cols is the same order as the columnExtenders
             def cols = init.content.cols
 
+            //TODO would be simpler to iterate cols and columnExtenders together using transpose() on [cols, columnsExtenders]
             def i = 0
             for (colRenderer in cols) {
 
                 if (colRenderer.is(this)) {
-                    this.currentHeader = init.content.tableConf.columnExtenders[i].column.header
+                    this.column = init.content.tableConf.columnExtenders[i].column
                     break
                 }
 
                 i++
             }
 
-            this.colsMap = new HashMap()
-            [cols, init.content.tableConf.columnExtenders].transpose().each {
-                renderer, extender -> this.colsMap.put(extender.column.header, [renderer, extender.column])
+            //we know our implementation is of a CombinedColumn, so we can ask about combinedColumns directly
+            this.subColRenderers = this.column.combinedColumns.collect { colExtender -> colExtender.column.columnRendererFactory.newInstance(init) }
+            def l = init.content.l
+            if (!init.content.emailMode) {
+                this.column.combinedColumns.each { subColExt ->
+                    def colJs = subColExt.column?.js.toString()
+                    if (colJs != null && !colJs.isEmpty()) {
+                        //TODO there should be a possible "column done" hook method where we can generate javascript,
+                        // because sometimes it's important to call javascript after all of table is rendered.
+                        l.script() {
+                            l.raw(colJs)
+                        }
+                    }
+                }
             }
         }
     }
-
-//    def traversedNames = new HashSet()
 
     def renderEntry(l, entry) {
 
@@ -58,13 +82,24 @@ public class CombinedColumnRenderer implements ColumnRenderer {
         initialize()
 
         //assign NOP
-        //TODO: almost have it, need to use a proxy of l instead with td being NOOP instead
-        //TODO: also need to change logic a bit so that combined Columns don't have to be visible in table...
-            def (_, extender) = this.colsMap[this.currentHeader]
-            extender.combinedColumns.each { colHeader ->
-                def (subColumnRenderer, __) = this.colsMap[colHeader.toString()]
-                subColumnRenderer.render(l, entry);
+
+        [column.combinedColumns, this.subColRenderers].transpose().each { subColExtender, subColRenderer ->
+            def display = true;
+            try {
+                //TODO build entry filters don't get access to init object?
+                display = subColExtender.column.buildEntryFilter.display(entry)
             }
+            catch (Exception e) {
+                Log.warning("failed to execute filter for ${column.header}:$subColExtender.column.header: $e.message")
+                Log.throwing (
+                        "/com/hp/mercury/ci/jenkins/plugins/downstreamlogs/DownstreamLogsSideMenuLink/content.groovy",
+                        "render",
+                        e)
+            }
+            if (display) {
+                subColRenderer.render(l, entry)
+            }
+        }
     }
 
 //    def recursiveRenderEntry(l, entry, headerOfColumnToRender) {

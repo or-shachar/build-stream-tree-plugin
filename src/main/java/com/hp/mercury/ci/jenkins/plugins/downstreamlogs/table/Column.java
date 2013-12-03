@@ -131,14 +131,14 @@ public class Column extends AbstractDescribableImpl<Column> {
     @SuppressWarnings("unused")
     public static class CombinedColumn extends Column {
 
-        private Collection<StringWrapper> combinedColumns;
+        private Collection<ColumnExtender> combinedColumns;
 
         @DataBoundConstructor
         public CombinedColumn(
                 String header,
                 StringProvider js,
                 StringProvider filter,
-                Collection<StringWrapper> combinedColumns) {
+                Collection<ColumnExtender> combinedColumns) {
             super(header,
                     //yes we could share the instance as a singleton, but as a hack we use the specific different instance to find the column instance from within the CombinedColumnRenderer
                     new StringProvider.DefaultStringProvider("CombinedColumnRenderer.groovy")
@@ -146,11 +146,11 @@ public class Column extends AbstractDescribableImpl<Column> {
             this.combinedColumns = combinedColumns;
         }
 
-        public Collection<StringWrapper> getCombinedColumns() {
+        public Collection<ColumnExtender> getCombinedColumns() {
             return combinedColumns;
         }
 
-        public void setCombinedColumns(Collection<StringWrapper> combinedColumns) {
+        public void setCombinedColumns(Collection<ColumnExtender> combinedColumns) {
             this.combinedColumns = combinedColumns;
         }
 

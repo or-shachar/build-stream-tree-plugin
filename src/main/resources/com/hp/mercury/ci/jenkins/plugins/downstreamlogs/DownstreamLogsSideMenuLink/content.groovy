@@ -21,6 +21,7 @@ l.tr() {
         def column = tableConf.columnExtenders[i].column
         def display = true
         try {
+            //TODO build entry filters don't get access to init object?
             display = column.buildEntryFilter.display(buildEntry)
         }
         catch (Exception e) {
