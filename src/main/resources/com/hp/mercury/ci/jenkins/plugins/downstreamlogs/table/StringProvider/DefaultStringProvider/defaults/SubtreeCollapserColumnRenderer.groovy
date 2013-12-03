@@ -42,7 +42,7 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
         rowCounter--
 
         if ((entry instanceof BuildStreamTreeEntry.BuildEntry) || (entry instanceof BuildStreamTreeEntry.JobEntry)) {
-            return [data: entry.run.timestamp.getTimeInMillis(), prefix:getNestingString(entry), jobName: entry.jobName]
+            return [data: rowCounter, prefix:getNestingString(entry), jobName: entry.jobName]
         }
 
         else if (entry instanceof BuildStreamTreeEntry.StringEntry) {

@@ -19,6 +19,7 @@ public class ParametersDiffColumnRenderer implements ColumnRenderer {
 
     def init
     def counter = 0
+    def lHelper
 
     def ParametersDiffColumnRenderer(init) {
 
@@ -27,10 +28,11 @@ public class ParametersDiffColumnRenderer implements ColumnRenderer {
         if (!init.content.emailMode) {
             def l = init.content.l
             l.script() {
-                init.content.l.raw("""
+                l.raw("""
                     tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999, width:\"100%\"});
                 """)
             }
+            lHelper = l
         }
 
     }
@@ -191,7 +193,7 @@ public class ParametersDiffColumnRenderer implements ColumnRenderer {
 
             def tdAttributes = [data: counter--]
             if (isChanged) {
-                tdAttributes.put("tooltip", renderContent(l, newParameters, removedParameters, modifiedParameters))
+                tdAttributes.put("tooltip", renderContent(lHelper, newParameters, removedParameters, modifiedParameters))
                 tdAttributes.put("nodismiss", "")
             }
 
