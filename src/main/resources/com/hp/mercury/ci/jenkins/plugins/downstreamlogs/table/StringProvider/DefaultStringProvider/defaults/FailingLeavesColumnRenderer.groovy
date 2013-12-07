@@ -54,12 +54,10 @@ public class FailingLeavesColumnRenderer implements ColumnRenderer {
     }
 
     Map cellMetadata(BuildStreamTreeEntry entry) {
-        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
 
-            return [data:entry.run.result.ordinal]
-        }
-
-        return [data:Result.SUCCESS.ordinal];
+        return ( (entry instanceof BuildStreamTreeEntry.BuildEntry) && entry?.run?.result ?
+            [data:entry.run.result.ordinal] :
+            [data:Result.SUCCESS.ordinal]);
     }
 
 
