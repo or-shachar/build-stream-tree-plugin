@@ -3,6 +3,7 @@ package com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.StringProvider.De
 import com.hp.commons.core.collection.CollectionUtils
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.BuildStreamTreeEntry
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.DownstreamLogsAction
+import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.Log
 import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.Table
 import hudson.Functions
 import hudson.Util
@@ -138,6 +139,8 @@ String pipelineClusteringView = Jenkins.instance.globalNodeProperties.find { gnp
     return (gnp instanceof EnvironmentVariablesNodeProperty) ? gnp : null
 }?.envVars.get("PIPELINE_CLUSTERING_VIEW")
 
+Log.debug("AbstractPipelineAdditionalTopLayout: pipelineClusteringView " + pipelineClusteringView)
+
 def associate(treeNode, clusterName) {
     def cluster = buildToClusterAssociation.get(clusterName, [])
     cluster.add(treeNode)
@@ -265,23 +268,29 @@ if (pipelineClusteringView != null) {
     ViewGroup view = Jenkins.instance
     pipelineClusteringView.tokenize('/').each { viewName ->
         view = view?.getView(viewName)
+        Log.debug("finding pipeline configuration, entering view:" + view.displayName)
     }
 
-    for (pipeline in view.views) {
+    //this should list pipelines
+    if (view.hasProperty("views")) {
 
-        pipelineClusterViews = pipeline.views
+        for (pipeline in view.views) {
 
-        buildToClusterAssociation = [:]
+            if (pipeline.hasProperty("views")) {
 
-        forest.each { root ->
+                pipelineClusterViews = pipeline.views
 
-            associateBuildToCluster(root)
-        }
+                buildToClusterAssociation = [:]
 
-        if (!buildToClusterAssociation.isEmpty()) {
+                forest.each { root ->
 
-            l.style() {
-                l.raw("""
+                    associateBuildToCluster(root)
+                }
+
+                if (!buildToClusterAssociation.isEmpty()) {
+
+                    l.style() {
+                        l.raw("""
 
                     #abstract-pipeline td {
                         background-color: white;
@@ -301,10 +310,10 @@ if (pipelineClusteringView != null) {
                     }
 
                 """)
-            }
+                    }
 
-            l.script() {
-                l.raw("""
+                    l.script() {
+                        l.raw("""
 
                 var cachedTree;
                 var collapseCellIndex = null;
@@ -467,42 +476,56 @@ if (pipelineClusteringView != null) {
                 }
 
                 """)
-            }
-
-            def colWidth = "${(int)(100 / pipelineClusteringView.size())}%"
-
-            l.table (id:"abstract-pipeline",class:"pane bigtable") {
-
-                l.tr() {
-                    l.th(colspan:pipelineClusterViews.size()) {
-                        l.text("Pipeline: $pipeline.viewName")
                     }
-                }
 
-                l.tr() {
-                    pipelineClusterViews.each { pcv ->
-                        l.th(width:colWidth) {
-                            l.text(" "+pcv.viewName)
+                    def colWidth = "${(int)(100 / pipelineClusteringView.size())}%"
+
+                    l.table (id:"abstract-pipeline",class:"pane bigtable") {
+
+                        l.tr() {
+                            l.th(colspan:pipelineClusterViews.size()) {
+                                l.text("Pipeline: $pipeline.viewName")
+                            }
+                        }
+
+                        l.tr() {
+                            pipelineClusterViews.each { pcv ->
+                                l.th(width:colWidth) {
+                                    l.text(" "+pcv.viewName)
+                                }
+                            }
+                        }
+
+                        l.tr(onmouseout: "restoreTree();") {
+                            pipelineClusterViews.each { pcv ->
+                                def clusterName = pcv.viewName
+                                def clusterTreeNodes = buildToClusterAssociation.get(clusterName)
+                                l.td(clusterNodes: clusterTreeNodes.collect{"\"${recGetNestingString(it)}\""}.toString(),
+                                        onmouseover: "collapseTreeByCluster(this.getAttribute(\"clusterNodes\"))",
+                                        onclick: "selectCluster(this)") {
+                                    l.text(" ")
+                                    renderBallForCluster(l, clusterTreeNodes)
+                                }
+                            }
                         }
                     }
-                }
 
-                l.tr(onmouseout: "restoreTree();") {
-                    pipelineClusterViews.each { pcv ->
-                        def clusterName = pcv.viewName
-                        def clusterTreeNodes = buildToClusterAssociation.get(clusterName)
-                        l.td(clusterNodes: clusterTreeNodes.collect{"\"${recGetNestingString(it)}\""}.toString(),
-                                onmouseover: "collapseTreeByCluster(this.getAttribute(\"clusterNodes\"))",
-                                onclick: "selectCluster(this)") {
-                            l.text(" ")
-                            renderBallForCluster(l, clusterTreeNodes)
-                        }
-                    }
+                    //we found a cluster that's right for us, now we stop
+                    break
                 }
             }
-
-            //we found a cluster that's right for us, now we stop
-            break
+            else {
+                throw new RuntimeException("The jenkins admin has defined an abstract pipeline header for " +
+                        "build-stream-tree, but pipeline " + pipeline.displayName + " of type " +
+                        pipeline.class.simpleName + " doesn't have subviews (it's not a NestedView)")
+            }
         }
+
+
     }
+    else {
+        throw new RuntimeException("Jenkins Admin has defined an abstract pipeline header for build-stream-tree, but there are no pipelines defined.");
+        Log.debug("unable to list subviews of supposed pipeline view " + view.displayName + " of type " + view.class.simpleName + " (should be NestedView...)");
+    }
+
 }
