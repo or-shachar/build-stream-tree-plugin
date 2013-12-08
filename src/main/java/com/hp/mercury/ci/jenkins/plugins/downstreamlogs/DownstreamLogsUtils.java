@@ -229,6 +229,8 @@ public class DownstreamLogsUtils {
             }
         });
 
+        Log.debug("downstream builds of " + run + " are " + triggered);
+
         return triggered;
     }
 
