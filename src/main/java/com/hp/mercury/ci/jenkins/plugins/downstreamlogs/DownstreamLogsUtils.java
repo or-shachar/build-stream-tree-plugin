@@ -96,11 +96,31 @@ public class DownstreamLogsUtils {
 
     public static Collection<BuildStreamTreeEntry> getDownstreamRuns(Run run) {
 
-        final Job parent = run instanceof MatrixRun ? ((MatrixRun) run).getParentBuild().getParent() : run.getParent();
-        final DownstreamLogsManualEmebedViaJobProperty property = (DownstreamLogsManualEmebedViaJobProperty) parent.getProperty(DownstreamLogsManualEmebedViaJobProperty.class);
+        Log.debug("getting downstream runs of " + run.toString());
+
+        Job parent = null;
+        //write explicitly instead of using ternary for different lines to appear in debug/exceptions.
+        final boolean isMatrixRun = run instanceof MatrixRun;
+        if (isMatrixRun) {
+            final MatrixRun matrixRun = (MatrixRun) run;
+            final MatrixBuild parentBuild = matrixRun.getParentBuild();
+            if (parentBuild != null) {
+                parent = parentBuild.getParent();
+            }
+        }
+        else {
+            parent = run.getParent();
+        }
+
+        DownstreamLogsManualEmebedViaJobProperty property = (parent != null) ?
+                (DownstreamLogsManualEmebedViaJobProperty) parent.getProperty(DownstreamLogsManualEmebedViaJobProperty.class) :
+                null;
+
         boolean cache = ((property != null) && (property.getOverrideGlobalConfig())) ?
                 (property.getCacheBuild()) :
                 DownstreamLogsAction.getDescriptorStatically().getCacheBuilds();
+
+        Log.debug("downstream of " + run + " should" + (cache ? " " : " not ") + "be retrieved from cache");
 
         return (cache) ?
              retrieveFromCache(run) :
@@ -109,33 +129,40 @@ public class DownstreamLogsUtils {
 
     private static List<BuildStreamTreeEntry> retrieveFromCache(Run run) {
 
+        Log.debug("retrieving " + run + " from cache");
+
         List<BuildStreamTreeEntry> triggered = null;
 
         //don't cache while build is running...
         if (run.isLogUpdated()) {
+            Log.debug("run is still being updated, not using cache.");
             return calculateDownstreamBuilds(run);
         }
 
         DownstreamLogsCacheAction cache = run.getAction(DownstreamLogsCacheAction.class);
         if (cache == null) {
             //the value inside cache will be set in a moment because triggered = null;
+            Log.debug("initializing cache in " + run);
             cache = new DownstreamLogsCacheAction(null);
             run.addAction(cache);
         }
         //only use cache if regexes haven't changed - if there are new ones we need to recalculate...
         else if (cache.getParserConfigs().equals(DownstreamLogsAction.getDescriptorStatically().getParserConfigs())){
 
+            Log.debug("checking if cache is valid for " + run + " with entries " + cache.getCachedEntries());
             //when updating entries its possible for a buildentry to become a string entry or somesuch, meaning we can't cache.
             //if that some entry won't be buildentry. so triggered will be null. so we'll reach the save condition...
             cache.updateEntries();
             //we only cache when we know the build, otherwise it might be that we're still building or waiting for something... a build in queue etc...
             if (cache.allEntriesGiveSpecificBuild()) {
 
+                Log.debug("cache is valid for " + run + " with " + cache.getCachedEntries());
                 triggered = new ArrayList<BuildStreamTreeEntry>(cache.getCachedEntries());
             }
         }
 
         if (triggered == null) {
+            Log.debug("triggered jobs are uninstantiated in cache of " + run + ", calculating.");
             triggered = calculateDownstreamBuilds(run);
             cache.setCachedEntries(triggered);
 
@@ -147,10 +174,13 @@ public class DownstreamLogsUtils {
 
     private static List<BuildStreamTreeEntry> calculateDownstreamBuilds(final Run run) {
 
+        Log.debug("calculating downstream builds of " + run);
+
         ArrayList<BuildStreamTreeEntry> triggered = new ArrayList<BuildStreamTreeEntry>();
 
         if (run instanceof MatrixBuild) {
             MatrixBuild mb = (MatrixBuild)run;
+            Log.debug("run is a matrix build with exact runs " + mb.getExactRuns());
             for (Run internalMatrixRun : mb.getExactRuns()) {
                 triggered.add(new BuildStreamTreeEntry.BuildEntry(internalMatrixRun));
             }
@@ -186,6 +216,7 @@ public class DownstreamLogsUtils {
         }
 
         //sanitize: make sure all downstream that we've just found agree that our upstream is really their upstream.
+        Log.debug("filtering out downstream builds that don't mark this build as their upstream...");
         CollectionUtils.filter(triggered, new Criteria<BuildStreamTreeEntry>() {
             public boolean isSuccessful(BuildStreamTreeEntry buildStreamTreeEntry) {
                 if (buildStreamTreeEntry instanceof BuildStreamTreeEntry.BuildEntry) {

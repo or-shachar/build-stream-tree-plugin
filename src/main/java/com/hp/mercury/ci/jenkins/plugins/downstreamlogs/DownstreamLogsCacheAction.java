@@ -50,6 +50,9 @@ public class DownstreamLogsCacheAction implements Action {
     }
 
     public boolean allEntriesGiveSpecificBuild() {
+        if (cachedEntries == null) {
+            return false;
+        }
         for (BuildStreamTreeEntry entry : cachedEntries) {
             if (!(entry instanceof BuildStreamTreeEntry.BuildEntry)) {
                 return false;
@@ -60,7 +63,8 @@ public class DownstreamLogsCacheAction implements Action {
 
     public synchronized void updateEntries() {
 
-        for (int i = 0 ; i < cachedEntries.size(); i++) {
+        //bug fix in case of corrupt cacheEntries
+        for (int i = 0 ; i < (cachedEntries == null ? 0 : cachedEntries.size()); i++) {
 
             BuildStreamTreeEntry entry = cachedEntries.get(i);
 
