@@ -16,11 +16,11 @@ class LastSuccessColumnRenderer implements ColumnRenderer {
 
     Map cellMetadata(BuildStreamTreeEntry entry) {
 
-        if (entry instanceof BuildStreamTreeEntry.BuildEntry) {
+        if (entry instanceof BuildStreamTreeEntry.BuildEntry && (entry?.run?.parent?.lastSuccessfulBuild)) {
             return [data: entry.run.parent.lastSuccessfulBuild.getTimeInMillis()]
         }
 
-        else if (entry instanceof BuildStreamTreeEntry.JobEntry) {
+        else if (entry instanceof BuildStreamTreeEntry.JobEntry && (entry.job.lastSuccessfulBuild)) {
             return [data: entry.job.lastSuccessfulBuild.getTimeInMillis()]
         }
 
