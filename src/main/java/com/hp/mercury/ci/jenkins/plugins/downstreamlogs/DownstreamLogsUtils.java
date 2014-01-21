@@ -307,7 +307,7 @@ public class DownstreamLogsUtils {
             //true, it makes more sense to check the other way round starting from the earliest possible and continuing onwards.
             //the jenkins API for this however seems to have horrible memory implications. see above comment.
             for (Run referencingBuild = referencingProject.getLastBuild() ;
-                    referencingBuild.getStartTimeInMillis() >= cutoffTime ;
+                    referencingBuild != null && referencingBuild.getStartTimeInMillis() >= cutoffTime ;
                     referencingBuild = referencingBuild.getPreviousBuild()) {
 
                 Log.debug ("checking if " + referencingBuild  + " was started by " + buildToReference);
