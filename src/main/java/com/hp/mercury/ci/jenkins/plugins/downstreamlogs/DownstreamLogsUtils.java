@@ -476,7 +476,7 @@ public class DownstreamLogsUtils {
         //if we have upstreams, we need to find their roots recursively, and return the aggregation of the results: all the combined roots
         //of all the upstream jobs.
         else {
-            List<Run> upstreamRoots = new ArrayList<Run>();
+            Collection<Run> upstreamRoots = new HashSet<Run>();
             for (Run upstreamRun : upstreamRuns) {
                 upstreamRoots.addAll(getRoots(upstreamRun));
             }
