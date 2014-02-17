@@ -12,7 +12,7 @@
 
     <groupId>com.hp.mercury.ci.jenkins.plugins</groupId>
     <artifactId>downstream-logs</artifactId>
-    <version>1.509.3.2</version>
+    <version>1.509.4</version>
 
     <packaging>hpi</packaging>
 
