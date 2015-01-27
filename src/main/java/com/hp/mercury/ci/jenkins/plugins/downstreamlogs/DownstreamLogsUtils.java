@@ -4,7 +4,6 @@ import com.hp.commons.core.collection.CollectionUtils;
 import com.hp.commons.core.criteria.Criteria;
 import com.hp.commons.core.criteria.InstanceOfCriteria;
 import com.hp.commons.core.handler.Handler;
-import com.hp.mercury.ci.jenkins.plugins.downstreamlogs.table.StringProvider;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;

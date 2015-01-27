@@ -131,13 +131,13 @@ public class DownstreamLogsNestedEmailContent extends DataBoundTokenMacro {
         context.setVariable("it", it);
         context.setVariable("build", build);
         context.setVariable("project", build.getParent());
-        context.setVariable("rooturl", ExtendedEmailPublisher.DESCRIPTOR.getHudsonUrl());
+        context.setVariable("rooturl", ExtendedEmailPublisher.descriptor().getHudsonUrl());
         return context;
     }
 
     private String getCharset() {
         String charset = Mailer.descriptor().getCharset();
-        String overrideCharset = ExtendedEmailPublisher.DESCRIPTOR.getCharset();
+        String overrideCharset = ExtendedEmailPublisher.descriptor().getCharset();
         if (overrideCharset != null) {
             charset = overrideCharset;
         }

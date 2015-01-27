@@ -1,0 +1,30 @@
+package com.hp.mercury.ci.jenkins.plugins.downstreamlogs.plugin;
+import hudson.model.ManagementLink;
+import hudson.Extension;
+
+@Extension
+public class ManageBuildStreamTreeLink extends ManagementLink {
+
+    public ManageBuildStreamTreeLink(){
+
+    }
+    @Override
+    public String getIconFileName()  {
+        return "/plugin/downstream-logs/images/48x48/bst.png";
+    }
+
+    public String getDisplayName() {
+        return "Build Stream Tree";
+    }
+
+    @Override
+    public String getUrlName() {
+        return "build-stream-tree";
+    }
+
+    @Override
+    public String getDescription() {
+        return "<span class=\"warning\">Not in use yet! </span>Control settings of Build Stream Tree";
+    }
+
+}

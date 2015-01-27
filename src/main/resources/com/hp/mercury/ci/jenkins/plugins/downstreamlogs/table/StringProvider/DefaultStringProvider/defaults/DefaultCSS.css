@@ -1,0 +1,5 @@
+#build-stream-tree-table th { text-align:left }
+#build-stream-tree-table td {
+white-space: nowrap;
+font-size: small;
+}

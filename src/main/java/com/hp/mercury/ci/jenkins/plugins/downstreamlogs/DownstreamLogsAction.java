@@ -285,7 +285,7 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
 
 
 
-                    new StringProvider.DefaultStringProvider("AlignTHLeft.css"),
+                    new StringProvider.DefaultStringProvider("DefaultCSS.css"),
                     new StringProvider.NoneStringProvider(),
                     new StringProvider.DefaultStringProvider("DefaultScriptInitializer.groovy"),
                     new StringProvider.NoneStringProvider(),

@@ -25,7 +25,6 @@ import java.util.*;
  */
 public abstract class StringProvider implements Describable<StringProvider> {
 
-    @DataBoundConstructor
     public StringProvider() {}
 
     public StringProviderDescriptor getDescriptor() {
