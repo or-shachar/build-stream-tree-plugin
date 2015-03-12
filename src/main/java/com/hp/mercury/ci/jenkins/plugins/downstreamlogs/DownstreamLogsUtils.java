@@ -13,13 +13,15 @@ import hudson.matrix.MatrixRun;
 import hudson.model.Cause;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.util.RunList;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.XMLOutput;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -34,7 +36,8 @@ import java.util.regex.Matcher;
 public class DownstreamLogsUtils {
 
     //UTILITY CLASS
-    private DownstreamLogsUtils() {}
+    private DownstreamLogsUtils() {
+    }
 
     public static String collectStringFromGroovyExecution(Class scriptClass, Binding binding) {
 
@@ -50,8 +53,7 @@ public class DownstreamLogsUtils {
             xmlOutput.flush();
             xmlOutput.close();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -91,7 +93,7 @@ public class DownstreamLogsUtils {
         return ret;
     }
 
-    private static Map<String,Class> compiledGroovyCache = new HashMap<String,Class>();
+    private static Map<String, Class> compiledGroovyCache = new HashMap<String, Class>();
 
     public static Collection<BuildStreamTreeEntry> getDownstreamRuns(Run run) {
 
@@ -106,8 +108,7 @@ public class DownstreamLogsUtils {
             if (parentBuild != null) {
                 parent = parentBuild.getParent();
             }
-        }
-        else {
+        } else {
             parent = run.getParent();
         }
 
@@ -122,8 +123,8 @@ public class DownstreamLogsUtils {
         Log.debug("downstream of " + run + " should" + (cache ? " " : " not ") + "be retrieved from cache");
 
         return (cache) ?
-             retrieveFromCache(run) :
-             calculateDownstreamBuilds(run);
+                retrieveFromCache(run) :
+                calculateDownstreamBuilds(run);
     }
 
     private static List<BuildStreamTreeEntry> retrieveFromCache(Run run) {
@@ -146,7 +147,7 @@ public class DownstreamLogsUtils {
             run.addAction(cache);
         }
         //only use cache if regexes haven't changed - if there are new ones we need to recalculate...
-        else if (cache.getParserConfigs().equals(DownstreamLogsAction.getDescriptorStatically().getParserConfigs())){
+        else if (cache.getParserConfigs().equals(DownstreamLogsAction.getDescriptorStatically().getParserConfigs())) {
 
             Log.debug("checking if cache is valid for " + run + " with entries " + cache.getCachedEntries());
             //when updating entries its possible for a buildentry to become a string entry or somesuch, meaning we can't cache.
@@ -165,7 +166,11 @@ public class DownstreamLogsUtils {
             triggered = calculateDownstreamBuilds(run);
             cache.setCachedEntries(triggered);
 
-            try { run.save(); } catch (IOException e) { throw new RuntimeException(e); }
+            try {
+                run.save();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return triggered;
@@ -178,7 +183,7 @@ public class DownstreamLogsUtils {
         ArrayList<BuildStreamTreeEntry> triggered = new ArrayList<BuildStreamTreeEntry>();
 
         if (run instanceof MatrixBuild) {
-            MatrixBuild mb = (MatrixBuild)run;
+            MatrixBuild mb = (MatrixBuild) run;
             Log.debug("run is a matrix build with exact runs " + mb.getExactRuns());
             for (Run internalMatrixRun : mb.getExactRuns()) {
                 triggered.add(new BuildStreamTreeEntry.BuildEntry(internalMatrixRun));
@@ -193,8 +198,8 @@ public class DownstreamLogsUtils {
 
                 BufferedReader bufferedReader = new BufferedReader(reader);
 
-                for (String line = bufferedReader.readLine() ;
-                     line != null ;
+                for (String line = bufferedReader.readLine();
+                     line != null;
                      line = bufferedReader.readLine()) {
 
                     //strip off jenkins specific encoding
@@ -204,13 +209,14 @@ public class DownstreamLogsUtils {
                             DownstreamLogsUtils.parseLineForTriggeredBuilds(line, run, buildExecutionByProject);
 
                     if (referencingBuilds != null) {
+
+                        //sort referencingBuilds into new collection and addAll to triggered
                         triggered.addAll(referencingBuilds);
+                        Collections.sort(triggered);
                     }
                 }
             }
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -244,10 +250,10 @@ public class DownstreamLogsUtils {
 
     private static class BuildExecutionByProjectCounter {
 
-        Map<String,Integer> perBuildProjectExecutionMap = new HashMap<String, Integer>();
+        Map<String, Integer> perBuildProjectExecutionMap = new HashMap<String, Integer>();
 
         private String key(Run build, Job project) {
-            return build.getParent().getFullDisplayName() + "#" + build.number + "/"+project.getFullDisplayName();
+            return build.getParent().getFullDisplayName() + "#" + build.number + "/" + project.getFullDisplayName();
 
         }
 
@@ -261,7 +267,7 @@ public class DownstreamLogsUtils {
         }
 
         public void addProjectBuildToProjectExecutionsFromUpstreamBuildSet(Run build, Job project) {
-            perBuildProjectExecutionMap.put(key(build,project), getProjectExecutionsSetFromUpstreamBuild(build,project) + 1);
+            perBuildProjectExecutionMap.put(key(build, project), getProjectExecutionsSetFromUpstreamBuild(build, project) + 1);
         }
     }
 
@@ -275,9 +281,7 @@ public class DownstreamLogsUtils {
 
         if (buildToReference.getParent() == referencingProject) {
             return buildToReference;
-        }
-
-        else {
+        } else {
 
             Integer projectDownstreamExecutionIndexOnBuild =
                     buildExecutionByProject.getProjectExecutionsSetFromUpstreamBuild(
@@ -305,11 +309,11 @@ public class DownstreamLogsUtils {
 
             //true, it makes more sense to check the other way round starting from the earliest possible and continuing onwards.
             //the jenkins API for this however seems to have horrible memory implications. see above comment.
-            for (Run referencingBuild = referencingProject.getLastBuild() ;
-                    referencingBuild != null && referencingBuild.getStartTimeInMillis() >= cutoffTime ;
-                    referencingBuild = referencingBuild.getPreviousBuild()) {
+            for (Run referencingBuild = referencingProject.getLastBuild();
+                 referencingBuild != null && referencingBuild.getStartTimeInMillis() >= cutoffTime;
+                 referencingBuild = referencingBuild.getPreviousBuild()) {
 
-                Log.debug ("checking if " + referencingBuild  + " was started by " + buildToReference);
+                Log.debug("checking if " + referencingBuild + " was started by " + buildToReference);
 
                 for (Cause.UpstreamCause upstreamCause : getUpstreamCauses(referencingBuild)) {
 
@@ -324,16 +328,16 @@ public class DownstreamLogsUtils {
                             Log.debug(referencingBuild + " is the build that was triggered by " + buildToReference + " " +
                                     "on this parsed line");
                             return referencingBuild;
-                        }
-                        else {
+                        } else {
                             Log.debug("skipping " + referencingBuild + " because it's the " + projectDownstreamExecutionIndexOnBuild + "'th execution of the build," +
-                                    "which was triggered in a previous step...") ;
+                                    "which was triggered in a previous step...");
 
                         }
                     }
                 }
 
             }
+
         }
 
         return null;
@@ -346,7 +350,7 @@ public class DownstreamLogsUtils {
         //see http://stackoverflow.com/questions/933447/how-do-you-cast-a-list-of-objects-from-one-type-to-another-in-java
         List<?> temp = new ArrayList<Cause>(run.getCauses());
         CollectionUtils.filter(temp, new InstanceOfCriteria(Cause.UpstreamCause.class));
-        return (List<Cause.UpstreamCause>)temp;
+        return (List<Cause.UpstreamCause>) temp;
     }
 
     private static List<BuildStreamTreeEntry> fromProjectName(
@@ -362,7 +366,7 @@ public class DownstreamLogsUtils {
         for (String projectName : projectNames) {
 
             projectName = projectName.trim();
-            Job referencingProject = (Job)Jenkins.getInstance().getItemByFullName(projectName);
+            Job referencingProject = (Job) Jenkins.getInstance().getItemByFullName(projectName);
             if (referencingProject != null) {
 
                 Run referencingBuild = getRunStartedByThisRun(referencingProject, currentBuild, buildExecutionByProject);
@@ -373,12 +377,10 @@ public class DownstreamLogsUtils {
                             referencingProject);
 
                     ret.add(new BuildStreamTreeEntry.BuildEntry(referencingBuild));
-                }
-                else {
+                } else {
                     ret.add(new BuildStreamTreeEntry.JobEntry(referencingProject));
                 }
-            }
-            else {
+            } else {
                 ret.add(new BuildStreamTreeEntry.StringEntry(projectName));
             }
         }
@@ -395,12 +397,14 @@ public class DownstreamLogsUtils {
         String projectName = matcher.group(config.getProjectIndex());
         final String group = matcher.group(config.getBuildIndex());
         Integer buildNumber = null;
-        try { buildNumber = Integer.parseInt(group); }  catch (NumberFormatException nfe) {
+        try {
+            buildNumber = Integer.parseInt(group);
+        } catch (NumberFormatException nfe) {
             Log.warning("error when parsing int " + group + " obtained with " + config.getGroovyRegex());
         }
 
         if (projectName != null && buildNumber != null) {
-            Job referencingProject = (Job)Jenkins.getInstance().getItemByFullName(projectName);
+            Job referencingProject = (Job) Jenkins.getInstance().getItemByFullName(projectName);
             if (referencingProject != null) {
                 Run referencingBuild = referencingProject.getBuildByNumber(buildNumber);
                 if (referencingBuild != null) {
@@ -408,16 +412,14 @@ public class DownstreamLogsUtils {
                             currentBuild,
                             referencingProject);
                     return Collections.singletonList(
-                            (BuildStreamTreeEntry)new BuildStreamTreeEntry.BuildEntry(referencingBuild));
-                }
-                else {
+                            (BuildStreamTreeEntry) new BuildStreamTreeEntry.BuildEntry(referencingBuild));
+                } else {
                     return Collections.singletonList(
-                            (BuildStreamTreeEntry)new BuildStreamTreeEntry.JobEntry(referencingProject));
+                            (BuildStreamTreeEntry) new BuildStreamTreeEntry.JobEntry(referencingProject));
                 }
-            }
-            else {
+            } else {
                 return Collections.singletonList(
-                        (BuildStreamTreeEntry)new BuildStreamTreeEntry.StringEntry(projectName + " " + buildNumber));
+                        (BuildStreamTreeEntry) new BuildStreamTreeEntry.StringEntry(projectName + " " + buildNumber));
             }
         }
 
@@ -433,10 +435,13 @@ public class DownstreamLogsUtils {
             Matcher matcher = config.getRegexPattern().matcher(line);
             if (matcher.matches()) {
 
-                List<BuildStreamTreeEntry> parsedBuild =
-                        (config.getRegexParseOrder() == ProjectAndBuildRegexParserConfig.RegexParseOrder.PROJECT_ONLY) ?
-                    fromProjectName(matcher, config, currentBuild, buildExecutionByProject) :
-                    fromProjectNameAndBuildNumber(matcher, config, currentBuild, buildExecutionByProject);
+                List<BuildStreamTreeEntry> parsedBuild;
+                if (config.getRegexParseOrder() == ProjectAndBuildRegexParserConfig.RegexParseOrder.PROJECT_ONLY) {
+                    parsedBuild = fromProjectName(matcher, config, currentBuild, buildExecutionByProject);
+                } else {
+
+                    parsedBuild =  fromProjectNameAndBuildNumber(matcher, config, currentBuild, buildExecutionByProject);
+                }
 
                 return parsedBuild;
             }
@@ -444,7 +449,6 @@ public class DownstreamLogsUtils {
 
         return null;
     }
-
 
 
     public static Collection<Run> getRoots(final Run build) {

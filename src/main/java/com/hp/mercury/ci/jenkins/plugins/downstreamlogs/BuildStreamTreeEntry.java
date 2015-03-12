@@ -12,14 +12,14 @@ import jenkins.model.Jenkins;
  * Time: 04:52
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuildStreamTreeEntry {
+public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTreeEntry> {
 
     @Deprecated
     transient private String path;
     @Deprecated
     transient private String template;
 
-    public static class BuildEntry extends BuildStreamTreeEntry {
+    public static class BuildEntry extends BuildStreamTreeEntry{
 
         transient Run run;
         private final String jobName;
@@ -57,6 +57,25 @@ public abstract class BuildStreamTreeEntry {
         public int getBuildNumber() {
             return buildNumber;
         }
+
+        public int compareTo(BuildStreamTreeEntry other) {
+            if(!(other instanceof BuildEntry)){
+                return 0;
+            }
+            long buildEntry1StartTime = this.getRun().getStartTimeInMillis();
+            long buildEntry2StartTime = ((BuildEntry)(other)).getRun().getStartTimeInMillis();
+            if(buildEntry1StartTime < buildEntry2StartTime){
+                return -1;
+            }else if(buildEntry1StartTime == buildEntry2StartTime){
+                //if start time and job name are the same, put the build with the lower number first
+                if(this.getRun().getDisplayName().equals(((BuildEntry)(other)).getRun().getDisplayName())){
+                    return Integer.compare(this.getBuildNumber(), ((BuildEntry)(other)).buildNumber);
+                }
+                return 0;
+            }else{
+                return -1;
+            }
+        }
     }
 
     public static class JobEntry extends BuildStreamTreeEntry {
@@ -87,6 +106,10 @@ public abstract class BuildStreamTreeEntry {
                     "jobName='" + jobName + '\'' +
                     '}';
         }
+
+        public int compareTo(BuildStreamTreeEntry o) {
+            return 0;
+        }
     }
 
     public static class StringEntry extends BuildStreamTreeEntry {
@@ -106,6 +129,10 @@ public abstract class BuildStreamTreeEntry {
             return "StringEntry{" +
                     string +
                     '}';
+        }
+
+        public int compareTo(BuildStreamTreeEntry o) {
+            return 0;
         }
     }
 
