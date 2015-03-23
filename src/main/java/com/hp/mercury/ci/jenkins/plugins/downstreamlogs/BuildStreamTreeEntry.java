@@ -62,18 +62,35 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
             if(!(other instanceof BuildEntry)){
                 return 0;
             }
-            long buildEntry1StartTime = this.getRun().getStartTimeInMillis();
-            long buildEntry2StartTime = ((BuildEntry)(other)).getRun().getStartTimeInMillis();
+
+            Run thisRun = this.getRun();
+            Run otherRun = ((BuildEntry) (other)).getRun();
+            if(thisRun==null || otherRun==null){
+                Log.warning("Tried to compare BuildStreamTreeEntry objects but at least one is null " +
+                        "thisRun: "  + thisRun + "otherRun: " + otherRun);
+                return 0;
+            }
+
+            long buildEntry1StartTime = thisRun.getStartTimeInMillis();
+            long buildEntry2StartTime = otherRun.getStartTimeInMillis();
             if(buildEntry1StartTime < buildEntry2StartTime){
                 return -1;
             }else if(buildEntry1StartTime == buildEntry2StartTime){
                 //if start time and job name are the same, put the build with the lower number first
-                if(this.getRun().getDisplayName().equals(((BuildEntry)(other)).getRun().getDisplayName())){
-                    return Integer.compare(this.getBuildNumber(), ((BuildEntry)(other)).buildNumber);
+                Job thisRunParent = thisRun.getParent();
+                Job otherRunParent = otherRun.getParent();
+                if(thisRunParent==null || otherRunParent==null){
+                    Log.warning("Tried to compare BuildStreamTreeEntry parent objects but at least one is null " +
+                            "thisRun: "  + thisRunParent + "otherRun: " + otherRunParent);
+                    return 0;
+                }
+
+                if(thisRunParent.getDisplayName().equals(otherRunParent.getDisplayName())){
+                    return Integer.compare(this.getBuildNumber(), ((BuildEntry)(other)).getBuildNumber());
                 }
                 return 0;
             }else{
-                return -1;
+                return 1;
             }
         }
     }
