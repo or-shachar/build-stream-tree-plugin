@@ -26,13 +26,13 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
         private final int buildNumber;
 
         public Run getRun() {
-            if (run == null) {
-                final Job job = Jenkins.getInstance().getItemByFullName(jobName, Job.class);
+            if (this.run == null) {
+                final Job job = Jenkins.getInstance().getItemByFullName(this.jobName, Job.class);
                 if (job != null) {
-                    this.run = job.getBuildByNumber(buildNumber);
+                    this.run = job.getBuildByNumber(this.buildNumber);
                 }
             }
-            return run;
+            return this.run;
         }
 
         public BuildEntry(Run run) {
@@ -45,17 +45,17 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
         @Override
         public String toString() {
             return "BuildEntry{" +
-                    "jobName='" + jobName + '\'' +
-                    ", buildNumber=" + buildNumber +
+                    "jobName='" + this.jobName + '\'' +
+                    ", buildNumber=" + this.buildNumber +
                     '}';
         }
 
         public String getJobName() {
-            return jobName;
+            return this.jobName;
         }
 
         public int getBuildNumber() {
-            return buildNumber;
+            return this.buildNumber;
         }
 
         public int compareTo(BuildStreamTreeEntry other) {
@@ -101,10 +101,10 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
         private final String jobName;
 
         public Job getJob() {
-            if (job == null) {
-                job = Jenkins.getInstance().getItemByFullName(jobName,Job.class);
+            if (this.job == null) {
+                this.job = Jenkins.getInstance().getItemByFullName(this.jobName,Job.class);
             }
-            return job;
+            return this.job;
         }
 
         public JobEntry(Job job) {
@@ -114,7 +114,7 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
         }
 
         public String getJobName() {
-            return jobName;
+            return this.jobName;
         }
 
         @Override
@@ -134,7 +134,7 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
         String string;
 
         public String getString() {
-            return string;
+            return this.string;
         }
 
         public StringEntry(String string) {
@@ -144,7 +144,7 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
         @Override
         public String toString() {
             return "StringEntry{" +
-                    string +
+                    this.string +
                     '}';
         }
 
