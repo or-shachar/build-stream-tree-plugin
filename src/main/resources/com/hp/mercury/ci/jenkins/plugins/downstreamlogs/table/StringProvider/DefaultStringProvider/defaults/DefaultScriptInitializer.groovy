@@ -23,4 +23,12 @@ def findTreeNodeForBuildEntry(buildEntry) {
     return content.buildEntryToNodeMap.get(buildEntry)
 }
 
+def isExactlyTreeDepthLimit(buildEntry){
+    return content.isExactlyTreeDepthLimit(buildEntry)
+}
+
+def getBuildEntryDepth(buildEntry){
+    return content.getNodeDepth(buildEntry)
+}
+
 return this

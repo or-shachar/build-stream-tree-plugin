@@ -54,6 +54,12 @@ f.section(title: "Build Stream Tree") {
         f.repeatableProperty(field: "parserConfigs", header:"Parser Configuration")
     }
 
+    f.entry(title: "Default Tree Depth",
+            field: "treeDepth"
+    ) {
+        f.number(field: "treeDepth")
+    }
+
     f.advanced() {
         f.entry(
                 title: "GUI Table Configurations",

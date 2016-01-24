@@ -1,6 +1,5 @@
 package com.hp.mercury.ci.jenkins.plugins.downstreamlogs;
 
-import groovy.lang.Binding;
 import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
@@ -19,7 +18,7 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
     @Deprecated
     transient private String template;
 
-    public static class BuildEntry extends BuildStreamTreeEntry{
+    public static class BuildEntry extends BuildStreamTreeEntry {
 
         transient Run run;
         private final String jobName;
@@ -102,7 +101,7 @@ public abstract class BuildStreamTreeEntry implements Comparable<BuildStreamTree
 
         public Job getJob() {
             if (this.job == null) {
-                this.job = Jenkins.getInstance().getItemByFullName(this.jobName,Job.class);
+                this.job = Jenkins.getInstance().getItemByFullName(this.jobName, Job.class);
             }
             return this.job;
         }

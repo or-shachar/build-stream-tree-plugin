@@ -42,7 +42,7 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
         rowCounter--
 
         if ((entry instanceof BuildStreamTreeEntry.BuildEntry) || (entry instanceof BuildStreamTreeEntry.JobEntry)) {
-            return [data: rowCounter, prefix:getNestingString(entry), jobName: entry.jobName]
+            return [data: rowCounter, prefix:getNestingString(entry), jobName: entry.jobName, class: "counterTd"]
         }
 
         else if (entry instanceof BuildStreamTreeEntry.StringEntry) {
@@ -57,13 +57,21 @@ public class SubtreeCollapserColumnRenderer implements ColumnRenderer {
     void render(JenkinsLikeXmlHelper l, BuildStreamTreeEntry.BuildEntry buildEntry) {
 
         boolean isLeaf = this.content.findTreeNodeForBuildEntry(buildEntry).children.isEmpty()
+        def buildEntryDepth = this.content.getBuildEntryDepth(buildEntry)
+        String expandedValue = true
+        String icon =  "minus.gif"
 
         if (isLeaf) {
             l.text(" ")
         }
         else {
-            l.div(expanded:"true", onClick: "expandCollapse(this)") {
-                l.img(src: "${Jenkins.instance.rootUrl}plugin/downstream-logs/images/16x16/minus.gif")
+            if(this.content.isExactlyTreeDepthLimit(buildEntry)){
+                //if it is the lowest row that is displayed, it should be collapsed
+                expandedValue= false;
+                icon="plus.gif"
+            }
+            l.div(class: "expandCollapseDiv", expanded:expandedValue, onClick: "expandCollapse(this)", nodeDepth: "${buildEntryDepth}") {
+                l.img(src: "${Jenkins.instance.rootUrl}plugin/downstream-logs/images/16x16/${icon}")
             }
         }
 

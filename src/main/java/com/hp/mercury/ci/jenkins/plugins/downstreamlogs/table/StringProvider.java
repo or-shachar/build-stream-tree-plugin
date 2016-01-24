@@ -28,6 +28,7 @@ import java.util.jar.JarFile;
  */
 public abstract class StringProvider implements Describable<StringProvider> {
 
+
     public StringProvider() {}
 
     public StringProviderDescriptor getDescriptor() {
@@ -133,7 +134,7 @@ public abstract class StringProvider implements Describable<StringProvider> {
             if (dirURL.getProtocol().equals("jar")) {
                 String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
                 JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
-                Log.debug("DOWNSTnREAM-LOGS: getting resource for default list from " + jar.getName());
+                Log.debug("DOWNSTREAM-LOGS: getting resource for default list from " + jar.getName());
                 Enumeration entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     String name = ((JarEntry)entries.nextElement()).getName();

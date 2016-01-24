@@ -209,7 +209,6 @@ public class DownstreamLogsUtils {
                             DownstreamLogsUtils.parseLineForTriggeredBuilds(line, run, buildExecutionByProject);
 
                     if (referencingBuilds != null) {
-
                         //sort referencingBuilds into new collection and addAll to triggered
                         triggered.addAll(referencingBuilds);
                         Collections.sort(triggered);
@@ -241,7 +240,8 @@ public class DownstreamLogsUtils {
 
     private static boolean isUpstream(Run upstream, Run downstream) {
         for (Cause.UpstreamCause uc : getUpstreamCauses(downstream)) {
-            if (uc.getUpstreamRun().equals(upstream)) {
+            Run upstreamRun = uc.getUpstreamRun();
+            if (upstreamRun!=null && upstreamRun.equals(upstream)) {
                 return true;
             }
         }
@@ -337,7 +337,6 @@ public class DownstreamLogsUtils {
                 }
 
             }
-
         }
 
         return null;
@@ -440,7 +439,7 @@ public class DownstreamLogsUtils {
                     parsedBuild = fromProjectName(matcher, config, currentBuild, buildExecutionByProject);
                 } else {
 
-                    parsedBuild =  fromProjectNameAndBuildNumber(matcher, config, currentBuild, buildExecutionByProject);
+                    parsedBuild = fromProjectNameAndBuildNumber(matcher, config, currentBuild, buildExecutionByProject);
                 }
 
                 return parsedBuild;

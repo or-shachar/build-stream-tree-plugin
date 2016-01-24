@@ -93,6 +93,7 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
         private Boolean initialized;
         private Boolean debugMode;
         private String emailTable;
+        private Integer treeDepth;
 
         private Map<User, String> userChosenConfig;
         public String getUserGuiTableName(User u) {
@@ -116,6 +117,14 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
 
         public void setEmailTable(String emailTable) {
             this.emailTable = emailTable;
+        }
+
+        public Integer getTreeDepth() {
+            return treeDepth;
+        }
+
+        public void setTreeDepth(Integer treeDepth){
+            this.treeDepth = treeDepth;
         }
 
         public Boolean getAlwaysEmbedBuildTreeInJob() {
@@ -208,6 +217,11 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
                 emailTable = guiConfigurationTables.get(0).getName();
             }
 
+            treeDepth = json.getInt("treeDepth");
+            if(treeDepth == null) {
+                treeDepth = 9999;
+            }
+
             save();
             return true;
         }
@@ -255,6 +269,10 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
             if (emailTable == null) {
                 emailTable = guiConfigurationTables.get(0).getName();
             }
+
+            if(treeDepth == null){
+                treeDepth = 99999;
+            }
         }
 
         //TODO this is a mock, implement GUI with a good default...
@@ -285,7 +303,7 @@ public class DownstreamLogsAction implements Action, Describable<DownstreamLogsA
 
 
 
-                    new StringProvider.DefaultStringProvider("DefaultCSS.css"),
+                    new StringProvider.DefaultStringProvider("AlignTHLeft.css"),
                     new StringProvider.NoneStringProvider(),
                     new StringProvider.DefaultStringProvider("DefaultScriptInitializer.groovy"),
                     new StringProvider.NoneStringProvider(),
