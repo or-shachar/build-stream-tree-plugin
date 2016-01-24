@@ -14,7 +14,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +27,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class StringProvider implements Describable<StringProvider> {
+
 
     public StringProvider() {}
 
@@ -104,7 +108,7 @@ public abstract class StringProvider implements Describable<StringProvider> {
 
     public static class DefaultStringProvider extends StringProvider {
 
-        private static final String DEFAULTS_PATH = DefaultStringProvider.class.getName().replaceAll("[\\$\\.]","/") + "/defaults";
+        private static final String DEFAULTS_PATH = DefaultStringProvider.class.getName().replaceAll("[\\$\\.]","/") + "/defaults/";
 
         private String selectedDefaultName;
         private transient String selectedDeafultText;
@@ -123,34 +127,40 @@ public abstract class StringProvider implements Describable<StringProvider> {
         }
 
         public static Collection<String> getDefaultsList() throws IOException {
+            Collection ret = new ArrayList();
+            Class clazz = DefaultStringProvider.class;
+            URL dirURL = clazz.getClassLoader().getResource(DEFAULTS_PATH);
 
-            Collection<String> ret = new ArrayList<String>();
-
-            Collection<File> dirs = new ArrayList<File>();
-
-            final Enumeration<URL> resources = DefaultStringProvider.class.getClassLoader().getResources(DEFAULTS_PATH);
-            while (resources.hasMoreElements()) {
-
-                final URL url = resources.nextElement();
-                dirs.add(new File(url.getFile()));
-
-            }
-
-            for (File dir : dirs) {
-                if (dir.exists() && dir.isDirectory() && dir.canRead()) {
-                    for (File file : dir.listFiles()) {
-                        if (file.exists() && file.isFile() && file.canRead()) {
-                            ret.add(file.getName());
+            if (dirURL.getProtocol().equals("jar")) {
+                String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
+                JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
+                Log.debug("DOWNSTREAM-LOGS: getting resource for default list from " + jar.getName());
+                Enumeration entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    String name = ((JarEntry)entries.nextElement()).getName();
+                    if (!name.equals(DEFAULTS_PATH))
+                    {
+                        if (name.startsWith(DEFAULTS_PATH)) {
+                            String entry = name.substring(DEFAULTS_PATH.length());
+                            if (!entry.equals("")) {
+                                int checkSubdir = entry.indexOf("/");
+                                if (checkSubdir < 0)
+                                {
+                                    ret.add(entry);
+                                    Log.debug("DOWNSTREAM-LOGS: found resource for default list: " + entry);
+                                }
+                            }
                         }
                     }
                 }
+                return ret;
             }
 
-            return ret;
+            throw new UnsupportedOperationException("Cannot list files for URL " + dirURL);
         }
 
         public static String getDefaultText(String defaultName) {
-            final String path = DEFAULTS_PATH + '/' + defaultName;
+            final String path = DEFAULTS_PATH + defaultName;
             String text;
             try {
                 text = new Scanner(DefaultStringProvider.class.getClassLoader().getResourceAsStream(path)).useDelimiter("\\Z").next();

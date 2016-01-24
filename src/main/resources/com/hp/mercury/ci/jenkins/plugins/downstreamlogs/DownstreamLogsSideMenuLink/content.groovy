@@ -11,11 +11,51 @@ import jenkins.model.Jenkins
 import org.kohsuke.stapler.Stapler
 
 l = new JenkinsLikeXmlHelper(output)
+DO_NOT_DISPLAY_TR = ["style":"display: none;"]
+TR_CLASS = ["class":"tableRow"]
+
+
+def isInTreeDepthLimit(buildEntry){
+//    def descriptor = DownstreamLogsAction.getDescriptorStatically()
+    if(getNodeDepth(buildEntry) > getTreeDisplayDepth()){
+        return false;
+    }
+    return true;
+}
+
+def isExactlyTreeDepthLimit(buildEntry){
+//    def descriptor = DownstreamLogsAction.getDescriptorStatically()
+    if(getNodeDepth(buildEntry) == getTreeDisplayDepth()){
+        return true;
+    }
+    return false;
+}
+
+def getTreeDisplayDepth(){
+    def descriptor = DownstreamLogsAction.getDescriptorStatically()
+    return descriptor.treeDepth;
+}
+
+def getNodeDepth(buildEntry){
+    return buildEntryToNodeMap?.get(buildEntry)?.depth
+}
+
+def getTrAttributes(buildEntry){
+    displayRow = [:]
+    displayRow.putAll(TR_CLASS)
+    //if the tr exceeds the tree depth limit, we want to hide it (display: none)
+    if(!isInTreeDepthLimit(buildEntry)){
+        displayRow.putAll(DO_NOT_DISPLAY_TR)
+    }
+    return displayRow
+}
 
 def void render(buildEntry) {
 
+    def displayRow = getTrAttributes(buildEntry)
+
 // we display all rows here, the filtering is done on the tree
-l.tr() {
+l.tr(displayRow) {
     cols.eachWithIndex { col, i ->
 
         def column = tableConf.columnExtenders[i].column
@@ -74,6 +114,7 @@ def recursiveRender(node) {
 }
 
 def renderTree() {
+    def treeDepth = getTreeDisplayDepth()?.toString()
     l.div(class:"downstream-logs") {
 
         l.h1("Build Stream Tree")
@@ -175,11 +216,11 @@ def renderTree() {
             tableConf.getAdditionalTopLayoutFactory().newInstance(init)
         }
 
-        l.table(id:"$Table.TABLE_HTML_ID", style:"margin-top:0px; border-top: none;", class:"pane bigtable sortable") {
+        l.table(id:"$Table.TABLE_HTML_ID", style:"margin-top:0px; border-top: none;", class:"pane bigtable sortable", depth:"${treeDepth}") {
 
             l.tr() {
                 tableConf.columnExtenders.each { colExt ->
-                    l.th() {
+                    l.th(class:"$colExt.column.header") {
                         l.raw(colExt.column.header)
                     }
                 }
@@ -275,7 +316,6 @@ def void recursiveBuildTree(ListIterator<TreeNode> listIterator) {
         def partiallyInstantiatedNode = listIterator.next()
 
         def be = partiallyInstantiatedNode.value
-
         if (shouldAddToTree(be)) {
             partiallyInstantiatedNode.index = index++
             if (be instanceof BuildStreamTreeEntry.BuildEntry) {
